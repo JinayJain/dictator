@@ -10,4 +10,10 @@ from .exceptions import DictatorError, RecordingError, TranscriptionError
 from .system_tray import SystemTrayManager
 
 __version__ = "1.0.0"
-__all__ = ["DictatorApp", "DictatorError", "RecordingError", "TranscriptionError", "SystemTrayManager"]
+__all__ = [
+    "DictatorApp",
+    "DictatorError",
+    "RecordingError",
+    "TranscriptionError",
+    "SystemTrayManager",
+]

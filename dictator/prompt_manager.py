@@ -85,7 +85,6 @@ class PromptManager:
                     f"Prompt '{prompt_name}' template must contain '{{transcript}}' placeholder"
                 )
 
-
     def get_prompt_for_app(self, app_class: str) -> Optional[str]:
         """Get the prompt template for a given application class.
 

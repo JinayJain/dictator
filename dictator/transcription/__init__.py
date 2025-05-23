@@ -15,4 +15,9 @@ def create_transcription_backend(backend: str = "deepgram") -> TranscriptionBack
         raise ValueError(f"Unknown transcription backend: {backend}")
 
 
-__all__ = ["TranscriptionBackend", "DeepgramBackend", "AssemblyAIBackend", "create_transcription_backend"]
+__all__ = [
+    "TranscriptionBackend",
+    "DeepgramBackend",
+    "AssemblyAIBackend",
+    "create_transcription_backend",
+]

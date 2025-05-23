@@ -19,7 +19,7 @@ load_dotenv()
 
 # Configure logging
 logging.basicConfig(
-    level=logging.DEBUG,
+    level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s",
     datefmt="%H:%M:%S",
 )
@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 def main() -> None:
     """Main entry point."""
     logger.info("Dictator CLI starting")
-    
+
     parser = argparse.ArgumentParser(
         description="Dictator: Voice recording and transcription tool"
     )
@@ -44,12 +44,12 @@ def main() -> None:
         default="deepgram",
         help="Transcription backend to use (default: deepgram)",
     )
-    
+
     args = parser.parse_args()
     logger.info(f"Executing command: {args.command} with backend: {args.backend}")
-    
+
     app = DictatorApp(backend=args.backend)
-    
+
     try:
         if args.command == "begin":
             app.begin_recording()
@@ -61,7 +61,7 @@ def main() -> None:
     except Exception as e:
         logger.error(f"Application error: {e}")
         sys.exit(1)
-    
+
     logger.info("Dictator CLI finished")
 
 

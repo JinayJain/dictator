@@ -24,7 +24,7 @@ class TextTyper:
         try:
             # Check if text contains non-ASCII characters
             try:
-                text.encode('ascii')
+                text.encode("ascii")
                 # ASCII text - use normal xdotool type
                 result = subprocess.run(
                     ["xdotool", "type", "--delay", "3", "--", text],
@@ -36,7 +36,9 @@ class TextTyper:
                 if result.returncode == 0:
                     logger.info("Text typed successfully")
                 else:
-                    logger.error(f"xdotool failed with return code: {result.returncode}")
+                    logger.error(
+                        f"xdotool failed with return code: {result.returncode}"
+                    )
 
                 if result.stderr:
                     logger.error(f"xdotool error: {result.stderr}")
@@ -56,11 +58,11 @@ class TextTyper:
     @staticmethod
     def type_text_chunk(text_chunk: str) -> None:
         """Type a chunk of text immediately using xdotool.
-        
+
         This method types text chunks as they arrive for streaming scenarios.
         Uses minimal delay for real-time feel. Converts newlines to spaces to avoid
         unwanted enter keypresses.
-        
+
         Args:
             text_chunk: The chunk of text to type immediately
         """
@@ -68,11 +70,11 @@ class TextTyper:
             return
 
         # Replace newlines with spaces to avoid hitting enter
-        sanitized_chunk = text_chunk.replace('\n', ' ').replace('\r', ' ')
-        
+        sanitized_chunk = text_chunk.replace("\n", " ").replace("\r", " ")
+
         # Remove trailing spaces and newlines only (preserve internal spacing)
-        sanitized_chunk = sanitized_chunk.rstrip(' \n\r\t')
-        
+        sanitized_chunk = sanitized_chunk.rstrip(" \n\r\t")
+
         # Skip if chunk becomes empty after sanitization
         if not sanitized_chunk:
             return
@@ -80,7 +82,7 @@ class TextTyper:
         try:
             # Check if chunk contains non-ASCII characters
             try:
-                sanitized_chunk.encode('ascii')
+                sanitized_chunk.encode("ascii")
                 # ASCII text - use normal xdotool type
                 result = subprocess.run(
                     ["xdotool", "type", "--delay", "1", "--", sanitized_chunk],
@@ -90,7 +92,9 @@ class TextTyper:
                 )
 
                 if result.returncode != 0:
-                    logger.error(f"xdotool failed with return code: {result.returncode}")
+                    logger.error(
+                        f"xdotool failed with return code: {result.returncode}"
+                    )
 
                 if result.stderr:
                     logger.error(f"xdotool error: {result.stderr}")
@@ -109,7 +113,7 @@ class TextTyper:
     @staticmethod
     def _type_unicode_string(text: str) -> None:
         """Type text containing Unicode characters using xdotool key codes.
-        
+
         Args:
             text: Text containing Unicode characters to type
         """
@@ -124,9 +128,11 @@ class TextTyper:
                         text=True,
                         timeout=XDOTOOL_TIMEOUT,
                     )
-                    
+
                     if result.returncode != 0:
-                        logger.error(f"xdotool failed to type Unicode character {char} (U+{ord(char):04X})")
+                        logger.error(
+                            f"xdotool failed to type Unicode character {char} (U+{ord(char):04X})"
+                        )
                 else:
                     # ASCII character - use regular type
                     result = subprocess.run(
@@ -135,10 +141,10 @@ class TextTyper:
                         text=True,
                         timeout=XDOTOOL_TIMEOUT,
                     )
-                    
+
                     if result.returncode != 0:
                         logger.error(f"xdotool failed to type ASCII character {char}")
-                        
+
         except subprocess.TimeoutExpired:
             logger.error("Unicode typing operation timed out")
         except FileNotFoundError:

@@ -27,7 +27,6 @@ class DeepgramBackend(TranscriptionBackend):
         if file_size == 0:
             raise TranscriptionError("Audio file is empty")
 
-
         try:
             options = PrerecordedOptions(
                 model="nova-3",
@@ -69,12 +68,10 @@ class DeepgramBackend(TranscriptionBackend):
             logger.error("No transcription results or channels found")
             return ""
 
-
         channel = response.results.channels[0]
         if not channel.alternatives:
             logger.warning("No alternatives found in transcription response")
             return ""
-
 
         alternative = channel.alternatives[0]
         transcript = alternative.transcript

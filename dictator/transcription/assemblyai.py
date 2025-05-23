@@ -38,7 +38,6 @@ class AssemblyAIBackend(TranscriptionBackend):
         if file_size == 0:
             raise TranscriptionError("Audio file is empty")
 
-
         try:
             logger.info("Sending audio to AssemblyAI")
             transcript = self.transcriber.transcribe(str(audio_file_path))
