@@ -48,9 +48,6 @@ class LLMPostProcessor:
             prompt = self._get_context_prompt()
 
             if not prompt:
-                logger.debug(
-                    "No context-specific processing needed, returning original transcript"
-                )
                 return transcript
 
             logger.info(
@@ -83,16 +80,18 @@ class LLMPostProcessor:
             prompt = self._get_context_prompt()
 
             if not prompt:
-                logger.debug(
-                    "No context-specific processing needed, typing original transcript"
-                )
                 text_typer_callback(transcript)
                 return
+
+            # Check if we should add indicator for this app
+            window_info = self.window_detector.get_focused_window_info()
+            app_class = window_info.get("class", "")
+            add_indicator = self.prompt_manager.should_add_indicator_for_app(app_class)
 
             logger.info(
                 f"Processing transcript with streaming LLM (length: {len(transcript)} chars)"
             )
-            self._call_llm_streaming(transcript, prompt, text_typer_callback)
+            self._call_llm_streaming(transcript, prompt, text_typer_callback, add_indicator)
 
         except Exception as e:
             logger.error(f"Streaming LLM processing failed: {e}, typing original transcript")
@@ -149,13 +148,14 @@ class LLMPostProcessor:
             logger.error(f"LLM API call failed: {e}")
             raise LLMProcessingError(f"Failed to process transcript with LLM: {e}")
 
-    def _call_llm_streaming(self, transcript: str, prompt_template: str, text_typer_callback) -> None:
+    def _call_llm_streaming(self, transcript: str, prompt_template: str, text_typer_callback, add_indicator: bool = False) -> None:
         """Call the LLM API with streaming to process the transcript.
 
         Args:
             transcript: The original transcribed text
             prompt_template: The prompt template with {transcript} placeholder
             text_typer_callback: Function to call for each chunk of text to type
+            add_indicator: Whether to add LLM indicator at the end
         """
         try:
             # Format the prompt with the transcript
@@ -172,6 +172,7 @@ class LLMPostProcessor:
             )
 
             # Process streaming response
+            chunks_processed = False
             for chunk in response:
                 try:
                     if chunk.choices and len(chunk.choices) > 0:
@@ -179,9 +180,15 @@ class LLMPostProcessor:
                         if hasattr(delta, 'content') and delta.content:
                             # Type each chunk as it arrives
                             text_typer_callback(delta.content)
+                            chunks_processed = True
                 except Exception as chunk_error:
                     logger.warning(f"Error processing chunk: {chunk_error}")
                     continue
+            
+            # Add indicator at the end if configured and we processed content
+            if add_indicator and chunks_processed:
+                indicator = self.prompt_manager.get_llm_indicator()
+                text_typer_callback(indicator)
 
         except Exception as e:
             logger.error(f"Streaming LLM API call failed: {e}")

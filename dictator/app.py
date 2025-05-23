@@ -43,7 +43,6 @@ class DictatorApp:
             try:
                 from .transcription import create_transcription_backend
                 self.transcription_service = create_transcription_backend(self.backend)
-                logger.debug(f"Transcription service initialized: {self.backend}")
             except Exception as e:
                 logger.error(f"Failed to initialize transcription service: {e}")
                 raise
@@ -58,7 +57,6 @@ class DictatorApp:
             try:
                 from .text_typer import TextTyper
                 self.text_typer = TextTyper()
-                logger.debug("Text typer initialized")
             except Exception as e:
                 logger.error(f"Failed to initialize text typer: {e}")
                 raise
@@ -73,7 +71,6 @@ class DictatorApp:
             try:
                 from .system_tray import SystemTrayManager
                 self.system_tray = SystemTrayManager()
-                logger.debug("System tray initialized")
             except Exception as e:
                 logger.error(f"Failed to initialize system tray: {e}")
                 raise
@@ -122,12 +119,10 @@ class DictatorApp:
                 system_tray = self._get_system_tray()
                 system_tray.start()
                 system_tray.set_recording_state()
-                logger.debug("System tray started")
             except Exception as e:
                 logger.warning(f"System tray initialization failed, continuing without it: {e}")
             
             # Keep running until signal received
-            logger.debug("Entering main loop, waiting for signals")
             while True:
                 signal.pause()
                 
@@ -166,16 +161,13 @@ class DictatorApp:
         logger.info("Starting cleanup")
         
         # Stop recording and get audio data from memory
-        logger.debug("About to stop recording...")
         audio_data = self.recorder.stop_recording()
         
         # Log memory buffer info
         memory_size = len(audio_data)
-        logger.debug(f"Retrieved {memory_size} bytes from memory buffer")
         
         # Check if WAV file was created
         exists, file_size = self.recorder.get_file_info()
-        logger.debug(f"WAV file after memory->file conversion: exists={exists}, size={file_size}")
         
         if exists and file_size > 0:
             try:
@@ -198,7 +190,6 @@ class DictatorApp:
                         if self._system_tray_initialized and self.system_tray:
                             self.system_tray.set_processing_state()
                         
-                        logger.debug("Applying streaming LLM post-processing...")
                         # Use streaming processing that types as it generates
                         llm_processor.process_transcript_streaming(
                             transcript, 

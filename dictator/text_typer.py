@@ -20,7 +20,6 @@ class TextTyper:
 
         preview = text[:50] + ("..." if len(text) > 50 else "")
         logger.info(f"Starting to type text: {preview}")
-        logger.debug(f"Full text to type: {text}")
 
         try:
             result = subprocess.run(
@@ -37,8 +36,6 @@ class TextTyper:
 
             if result.stderr:
                 logger.error(f"xdotool error: {result.stderr}")
-            if result.stdout:
-                logger.debug(f"xdotool output: {result.stdout}")
 
         except subprocess.TimeoutExpired:
             logger.error("xdotool timed out")
@@ -71,7 +68,6 @@ class TextTyper:
         if not sanitized_chunk:
             return
 
-        logger.debug(f"Typing chunk: {sanitized_chunk}")
 
         try:
             result = subprocess.run(

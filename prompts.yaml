@@ -1,6 +1,10 @@
 # Dictator LLM Prompt Configuration
 # This file defines reusable prompts and application mappings for LLM post-processing
 
+# Global configuration
+config:
+  llm_indicator: "✦"  # Unicode character to append to LLM-generated text
+
 # Reusable prompt definitions
 prompts:
   casual_web:
@@ -26,6 +30,7 @@ prompts:
   super_casual_chat:
     name: "Super Casual Chat"
     description: "Very informal text for chat apps like Discord, Slack, texting"
+    add_indicator: true  # Add LLM indicator for this prompt type
     template: |
       Convert this voice transcription to super casual chat text like you'd type in Discord or texting.
 
@@ -85,8 +90,8 @@ applications:
       - "telegram"
       - "signal"
       - "whatsapp"
-      - "element"        # Matrix client
-      - "riot"           # Matrix client
+      - "element" # Matrix client
+      - "riot" # Matrix client
     prompt: "super_casual_chat"
 
   # Web browsers - casual tone for social media, comments, etc.
@@ -99,11 +104,11 @@ applications:
       - "microsoft-edge"
       - "safari"
     prompt: "casual_web"
-    
+
   # Code editors and IDEs - format as comments
   code_editors:
     patterns:
-      - "code"           # VSCode
+      - "code" # VSCode
       - "vim"
       - "nvim"
       - "emacs"
@@ -113,7 +118,7 @@ applications:
       - "pycharm"
       - "intellij"
     prompt: "code_comment"
-    
+
   # Office/document applications - formal tone
   office_apps:
     patterns:
@@ -121,10 +126,10 @@ applications:
       - "writer"
       - "calc"
       - "impress"
-      - "thunderbird"    # Email client
-      - "evolution"      # Email client
+      - "thunderbird" # Email client
+      - "evolution" # Email client
     prompt: "formal_document"
-    
+
   # Text editors - formal tone for documents
   text_editors:
     patterns:
@@ -133,7 +138,7 @@ applications:
       - "mousepad"
       - "leafpad"
     prompt: "formal_document"
-    
+
   # Default fallback - no processing
   default:
     prompt: null

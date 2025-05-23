@@ -27,7 +27,6 @@ class DeepgramBackend(TranscriptionBackend):
         if file_size == 0:
             raise TranscriptionError("Audio file is empty")
 
-        logger.debug(f"Audio file size: {file_size} bytes")
 
         try:
             options = PrerecordedOptions(
@@ -39,7 +38,6 @@ class DeepgramBackend(TranscriptionBackend):
 
             custom_options = {"mip_opt_out": "true"}
 
-            logger.debug("Reading audio file for transcription")
             with open(audio_file_path, "rb") as audio_file:
                 buffer = audio_file.read()
 
@@ -49,7 +47,6 @@ class DeepgramBackend(TranscriptionBackend):
             response = self.client.listen.rest.v("1").transcribe_file(
                 payload, options, addons=custom_options
             )
-            logger.debug("Received response from Deepgram")
 
             return self._extract_transcript(response)
 
@@ -70,26 +67,21 @@ class DeepgramBackend(TranscriptionBackend):
         """Extract transcript from Deepgram response."""
         if not (response.results and response.results.channels):
             logger.error("No transcription results or channels found")
-            logger.debug(f"Response structure: {response}")
             return ""
 
-        logger.debug(f"Response has {len(response.results.channels)} channels")
 
         channel = response.results.channels[0]
         if not channel.alternatives:
             logger.warning("No alternatives found in transcription response")
             return ""
 
-        logger.debug(f"Channel 0 has {len(channel.alternatives)} alternatives")
 
         alternative = channel.alternatives[0]
         transcript = alternative.transcript
         confidence = getattr(alternative, "confidence", "unknown")
 
         logger.info(f"Deepgram transcription completed, confidence: {confidence}")
-        logger.debug(f"Raw transcript: '{transcript}'")
 
         cleaned_transcript = transcript.strip()
-        logger.debug(f"Cleaned transcript: '{cleaned_transcript}'")
 
         return cleaned_transcript

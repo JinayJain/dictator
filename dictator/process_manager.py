@@ -26,7 +26,6 @@ class ProcessManager:
             os.kill(pid, 0)  # Signal 0 checks if process exists
             return True
         except (ProcessLookupError, ValueError, OSError):
-            logger.debug("Stale lockfile found, removing")
             self._cleanup_lockfile()
             return False
     
@@ -62,6 +61,5 @@ class ProcessManager:
         try:
             if self.lockfile_path.exists():
                 self.lockfile_path.unlink()
-                logger.debug("Lockfile removed")
         except OSError as e:
             logger.error(f"Error removing lockfile: {e}")

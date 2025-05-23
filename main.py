@@ -29,7 +29,6 @@ logger = logging.getLogger(__name__)
 def main() -> None:
     """Main entry point."""
     logger.info("Dictator CLI starting")
-    logger.debug(f"Command line args: {sys.argv}")
     
     parser = argparse.ArgumentParser(
         description="Dictator: Voice recording and transcription tool"

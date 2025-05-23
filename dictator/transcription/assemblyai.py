@@ -38,12 +38,10 @@ class AssemblyAIBackend(TranscriptionBackend):
         if file_size == 0:
             raise TranscriptionError("Audio file is empty")
 
-        logger.debug(f"Audio file size: {file_size} bytes")
 
         try:
             logger.info("Sending audio to AssemblyAI")
             transcript = self.transcriber.transcribe(str(audio_file_path))
-            logger.debug("Received response from AssemblyAI")
 
             if transcript.error:
                 raise TranscriptionError(
@@ -54,10 +52,8 @@ class AssemblyAIBackend(TranscriptionBackend):
             logger.info(
                 f"AssemblyAI transcription completed, length: {len(result)} chars"
             )
-            logger.debug(f"Raw transcript: '{result}'")
 
             cleaned_transcript = result.strip()
-            logger.debug(f"Cleaned transcript: '{cleaned_transcript}'")
 
             return cleaned_transcript
 

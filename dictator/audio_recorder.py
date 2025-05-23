@@ -42,7 +42,6 @@ class AudioRecorder:
         ]
         
         logger.info("Starting audio recording to memory...")
-        logger.debug(f"Command: {' '.join(cmd)}")
         
         try:
             self.process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -58,7 +57,6 @@ class AudioRecorder:
             
             self.recording_thread = threading.Thread(target=self._record_to_memory, daemon=True)
             self.recording_thread.start()
-            logger.debug("Recording thread started")
             
         except FileNotFoundError:
             raise RecordingError("parec command not found. Please install PulseAudio utilities.")
@@ -69,11 +67,9 @@ class AudioRecorder:
         """Make file handle non-blocking using fcntl."""
         flags = fcntl.fcntl(file_handle.fileno(), fcntl.F_GETFL)
         fcntl.fcntl(file_handle, fcntl.F_SETFL, flags | os.O_NONBLOCK)
-        logger.debug("Made stdout non-blocking")
     
     def _record_to_memory(self) -> None:
         """Record audio data to memory buffer in separate thread."""
-        logger.debug("Started recording to memory buffer")
         bytes_recorded = 0
         
         while self.is_recording and self.process:
@@ -82,8 +78,6 @@ class AudioRecorder:
                 if data:
                     self.audio_buffer.write(data)
                     bytes_recorded += len(data)
-                    if bytes_recorded % (self.block_size * 10) == 0:  # Log every ~160KB
-                        logger.debug(f"Recorded {bytes_recorded} bytes to memory")
                 else:
                     # No data available, sleep briefly to avoid busy waiting
                     time.sleep(0.001)  # 1ms
@@ -111,12 +105,10 @@ class AudioRecorder:
         try:
             # Send SIGINT first (more graceful than SIGTERM for audio recording)
             self.process.send_signal(signal.SIGINT)
-            logger.debug("Sent SIGINT signal for graceful audio buffer flush")
             
             # Give the recording thread a moment to finish reading any remaining data
             if self.recording_thread:
                 self.recording_thread.join(timeout=2.0)
-                logger.debug("Recording thread joined")
             
             try:
                 # Wait for process to terminate
@@ -153,7 +145,6 @@ class AudioRecorder:
         import struct
         import wave
         
-        logger.debug(f"Creating WAV file with {len(raw_audio_data)} bytes of raw audio")
         
         try:
             with wave.open(str(self.audio_file_path), 'wb') as wav_file:
@@ -173,7 +164,6 @@ class AudioRecorder:
         try:
             if self.audio_file_path.exists():
                 self.audio_file_path.unlink()
-                logger.debug("Removed existing audio file")
         except OSError as e:
             logger.warning(f"Error removing existing audio file: {e}")
     

@@ -67,7 +67,6 @@ class SystemTrayManager:
         if not self.icon:
             return
 
-        logger.debug("Setting tray icon to recording state")
         icon_image = self._create_recording_icon()
         self.icon.icon = icon_image
 
@@ -86,7 +85,6 @@ class SystemTrayManager:
         if not self.icon:
             return
 
-        logger.debug("Setting tray icon to transcribing state")
         icon_image = self._create_transcribing_icon()
         self.icon.icon = icon_image
 
@@ -105,7 +103,6 @@ class SystemTrayManager:
         if not self.icon:
             return
 
-        logger.debug("Setting tray icon to processing state")
         icon_image = self._create_processing_icon()
         self.icon.icon = icon_image
 
@@ -124,7 +121,6 @@ class SystemTrayManager:
         if not self.icon:
             return
 
-        logger.debug("Setting tray icon to idle state")
         icon_image = self._create_idle_icon()
         self.icon.icon = icon_image
 
