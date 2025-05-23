@@ -16,10 +16,10 @@ prompts:
 
       Guidelines:
       - Use lowercase for most things
+      - Use punctuation where it feels natural
       - Use texting abbreviations (u, ur, gonna, wanna, etc.)
-      - Keep it conversational and relaxed
       - Use casual contractions
-      - Don't be overly formal at all
+      - Keep it casual but faithful to the original text
 
       Original transcribed text: {transcript}
 
