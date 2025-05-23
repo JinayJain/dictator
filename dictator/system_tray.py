@@ -100,6 +100,25 @@ class SystemTrayManager:
         )
         self.icon.menu = menu
 
+    def set_processing_state(self) -> None:
+        """Update tray icon to show LLM processing/typing state."""
+        if not self.icon:
+            return
+
+        logger.debug("Setting tray icon to processing state")
+        icon_image = self._create_processing_icon()
+        self.icon.icon = icon_image
+
+        # Update menu
+        menu = pystray.Menu(
+            pystray.MenuItem("Dictator", None, enabled=False),
+            pystray.Menu.SEPARATOR,
+            pystray.MenuItem("Status: Processing & Typing...", None, enabled=False),
+            pystray.Menu.SEPARATOR,
+            pystray.MenuItem("Quit", self._quit_callback),
+        )
+        self.icon.menu = menu
+
     def set_idle_state(self) -> None:
         """Update tray icon to show idle state."""
         if not self.icon:
@@ -185,6 +204,23 @@ class SystemTrayManager:
         draw.ellipse(
             [inner_margin, inner_margin, size - inner_margin, size - inner_margin],
             fill=(100, 180, 255, 128),
+        )
+
+        return image
+
+    def _create_processing_icon(self) -> Image.Image:
+        """Create icon for LLM processing/typing state (green circle)."""
+        size = 64
+        image = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+        draw = ImageDraw.Draw(image)
+
+        # Draw green circle
+        margin = 8
+        draw.ellipse(
+            [margin, margin, size - margin, size - margin],
+            fill=(20, 200, 20, 255),
+            outline=(0, 150, 0, 255),
+            width=2,
         )
 
         return image

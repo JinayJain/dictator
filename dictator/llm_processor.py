@@ -15,10 +15,10 @@ logger = logging.getLogger(__name__)
 
 class LLMPostProcessor:
     """Post-processes transcribed text using LLM based on application context."""
-    
-    def __init__(self, model: str = "gemini/gemini-2.0-flash"):
+
+    def __init__(self, model: str = "gemini/gemini-2.0-flash-lite"):
         """Initialize the LLM post-processor.
-        
+
         Args:
             model: The LiteLLM model identifier to use for processing
         """
@@ -26,105 +26,170 @@ class LLMPostProcessor:
         self.window_detector = WindowDetector()
         self.prompt_manager = PromptManager()
         self._validate_api_key()
-    
+
     def _validate_api_key(self) -> None:
         """Validate that required API key is available."""
         if not os.getenv("GEMINI_API_KEY"):
             raise LLMProcessingError(
                 "GEMINI_API_KEY environment variable is required for LLM post-processing"
             )
-    
+
     def process_transcript(self, transcript: str) -> str:
         """Process transcript based on the currently focused application.
-        
+
         Args:
             transcript: The original transcribed text
-            
+
         Returns:
             Processed text, or original transcript if processing fails/not needed
         """
         try:
             # Get the context-specific prompt
             prompt = self._get_context_prompt()
-            
+
             if not prompt:
-                logger.debug("No context-specific processing needed, returning original transcript")
+                logger.debug(
+                    "No context-specific processing needed, returning original transcript"
+                )
                 return transcript
-            
-            logger.info(f"Processing transcript with LLM (length: {len(transcript)} chars)")
+
+            logger.info(
+                f"Processing transcript with LLM (length: {len(transcript)} chars)"
+            )
             processed_text = self._call_llm(transcript, prompt)
-            
+
             if processed_text:
-                logger.info(f"LLM processing successful (length: {len(processed_text)} chars)")
+                logger.info(
+                    f"LLM processing successful (length: {len(processed_text)} chars)"
+                )
                 return processed_text
             else:
                 logger.warning("LLM returned empty response, using original transcript")
                 return transcript
-                
+
         except Exception as e:
             logger.error(f"LLM processing failed: {e}, using original transcript")
             return transcript
-    
+
+    def process_transcript_streaming(self, transcript: str, text_typer_callback):
+        """Process transcript with streaming output and real-time typing.
+
+        Args:
+            transcript: The original transcribed text
+            text_typer_callback: Function to call for each chunk of text to type
+        """
+        try:
+            # Get the context-specific prompt
+            prompt = self._get_context_prompt()
+
+            if not prompt:
+                logger.debug(
+                    "No context-specific processing needed, typing original transcript"
+                )
+                text_typer_callback(transcript)
+                return
+
+            logger.info(
+                f"Processing transcript with streaming LLM (length: {len(transcript)} chars)"
+            )
+            self._call_llm_streaming(transcript, prompt, text_typer_callback)
+
+        except Exception as e:
+            logger.error(f"Streaming LLM processing failed: {e}, typing original transcript")
+            text_typer_callback(transcript)
+
     def _get_context_prompt(self) -> Optional[str]:
         """Get the appropriate prompt based on the current application context.
-        
+
         Returns:
             Prompt string if context-specific processing is needed, None otherwise
         """
         try:
             window_info = self.window_detector.get_focused_window_info()
             app_class = window_info.get("class", "")
-            
+
             return self.prompt_manager.get_prompt_for_app(app_class)
-            
+
         except Exception as e:
             logger.warning(f"Failed to determine context: {e}")
             return None
-    
-    
+
     def _call_llm(self, transcript: str, prompt_template: str) -> Optional[str]:
         """Call the LLM API to process the transcript.
-        
+
         Args:
             transcript: The original transcribed text
             prompt_template: The prompt template with {transcript} placeholder
-            
+
         Returns:
             Processed text from the LLM, or None if call fails
         """
         try:
             # Format the prompt with the transcript
             formatted_prompt = prompt_template.format(transcript=transcript)
-            
+
             # Call LiteLLM
             response = litellm.completion(
                 model=self.model,
-                messages=[
-                    {
-                        "role": "user", 
-                        "content": formatted_prompt
-                    }
-                ],
+                messages=[{"role": "user", "content": formatted_prompt}],
                 temperature=0.3,  # Low temperature for consistent output
                 max_tokens=1000,  # Reasonable limit for transcript processing
-                timeout=30  # 30 second timeout
+                timeout=30,  # 30 second timeout
             )
-            
+
             if response and response.choices and len(response.choices) > 0:
                 processed_text = response.choices[0].message.content
                 if processed_text:
                     return processed_text.strip()
-            
+
             logger.warning("LLM response was empty or malformed")
             return None
-            
+
         except Exception as e:
             logger.error(f"LLM API call failed: {e}")
             raise LLMProcessingError(f"Failed to process transcript with LLM: {e}")
-    
+
+    def _call_llm_streaming(self, transcript: str, prompt_template: str, text_typer_callback) -> None:
+        """Call the LLM API with streaming to process the transcript.
+
+        Args:
+            transcript: The original transcribed text
+            prompt_template: The prompt template with {transcript} placeholder
+            text_typer_callback: Function to call for each chunk of text to type
+        """
+        try:
+            # Format the prompt with the transcript
+            formatted_prompt = prompt_template.format(transcript=transcript)
+
+            # Call LiteLLM with streaming
+            response = litellm.completion(
+                model=self.model,
+                messages=[{"role": "user", "content": formatted_prompt}],
+                temperature=0.3,  # Low temperature for consistent output
+                max_tokens=1000,  # Reasonable limit for transcript processing
+                timeout=30,  # 30 second timeout
+                stream=True,  # Enable streaming
+            )
+
+            # Process streaming response
+            for chunk in response:
+                try:
+                    if chunk.choices and len(chunk.choices) > 0:
+                        delta = chunk.choices[0].delta
+                        if hasattr(delta, 'content') and delta.content:
+                            # Type each chunk as it arrives
+                            text_typer_callback(delta.content)
+                except Exception as chunk_error:
+                    logger.warning(f"Error processing chunk: {chunk_error}")
+                    continue
+
+        except Exception as e:
+            logger.error(f"Streaming LLM API call failed: {e}")
+            raise LLMProcessingError(f"Failed to process transcript with streaming LLM: {e}")
+
     def is_enabled(self) -> bool:
         """Check if LLM post-processing is enabled and properly configured.
-        
+
         Returns:
             True if post-processing can be used, False otherwise
         """

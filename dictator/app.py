@@ -190,15 +190,23 @@ class DictatorApp:
                 if transcript:
                     logger.info(f"Transcription successful, length: {len(transcript)} chars")
                     
-                    # Apply LLM post-processing if available
-                    final_text = transcript
+                    # Apply LLM post-processing if available, with streaming
+                    text_typer = self._get_text_typer()
                     llm_processor = self._get_llm_processor()
                     if llm_processor and llm_processor.is_enabled():
-                        logger.debug("Applying LLM post-processing...")
-                        final_text = llm_processor.process_transcript(transcript)
-                    
-                    text_typer = self._get_text_typer()
-                    text_typer.type_text(final_text)
+                        # Update tray to processing state
+                        if self._system_tray_initialized and self.system_tray:
+                            self.system_tray.set_processing_state()
+                        
+                        logger.debug("Applying streaming LLM post-processing...")
+                        # Use streaming processing that types as it generates
+                        llm_processor.process_transcript_streaming(
+                            transcript, 
+                            text_typer.type_text_chunk
+                        )
+                    else:
+                        # No LLM processing, type original transcript
+                        text_typer.type_text(transcript)
                 else:
                     logger.warning("No transcript generated")
                     
