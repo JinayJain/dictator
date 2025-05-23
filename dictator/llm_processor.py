@@ -7,6 +7,7 @@ from typing import Optional
 import litellm
 
 from .exceptions import LLMProcessingError
+from .prompt_manager import PromptManager
 from .window_detector import WindowDetector
 
 logger = logging.getLogger(__name__)
@@ -23,6 +24,7 @@ class LLMPostProcessor:
         """
         self.model = model
         self.window_detector = WindowDetector()
+        self.prompt_manager = PromptManager()
         self._validate_api_key()
     
     def _validate_api_key(self) -> None:
@@ -70,36 +72,15 @@ class LLMPostProcessor:
             Prompt string if context-specific processing is needed, None otherwise
         """
         try:
-            if self.window_detector.is_chrome_focused():
-                return self._get_chrome_prompt()
+            window_info = self.window_detector.get_focused_window_info()
+            app_class = window_info.get("class", "")
             
-            # Add more application-specific prompts here in the future
-            # elif self.window_detector.is_vscode_focused():
-            #     return self._get_code_editor_prompt()
-            
-            return None
+            return self.prompt_manager.get_prompt_for_app(app_class)
             
         except Exception as e:
             logger.warning(f"Failed to determine context: {e}")
             return None
     
-    def _get_chrome_prompt(self) -> str:
-        """Get the prompt for Chrome/browser context."""
-        return """You are helping to post-process voice-to-text transcription for web browsing.
-
-The user dictated text while using a web browser. Your task is to make the text more informal and conversational, as if typing casually on the web (like in comments, social media, chat, etc.).
-
-Guidelines:
-- Make the text more casual and informal
-- Use contractions (don't, can't, won't, etc.)
-- Remove overly formal language
-- Keep the core meaning intact
-- Don't add new information or change facts
-- If the text is already informal, minimal changes are needed
-
-Original transcribed text: {transcript}
-
-Respond with only the processed text, no explanations or additional commentary."""
     
     def _call_llm(self, transcript: str, prompt_template: str) -> Optional[str]:
         """Call the LLM API to process the transcript.

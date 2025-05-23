@@ -1,0 +1,139 @@
+# Dictator LLM Prompt Configuration
+# This file defines reusable prompts and application mappings for LLM post-processing
+
+# Reusable prompt definitions
+prompts:
+  casual_web:
+    name: "Casual Web Text"
+    description: "Makes formal dictation casual for web interactions (social media, comments, chat)"
+    template: |
+      You are helping to post-process voice-to-text transcription for web browsing.
+
+      The user dictated text while using a web browser. Your task is to make the text more informal and conversational, as if typing casually on the web (like in comments, social media, chat, etc.).
+
+      Guidelines:
+      - Make the text more casual and informal
+      - Use contractions (don't, can't, won't, etc.)
+      - Remove overly formal language
+      - Keep the core meaning intact
+      - Don't add new information or change facts
+      - If the text is already informal, minimal changes are needed
+
+      Original transcribed text: {transcript}
+
+      Respond with only the processed text, no explanations or additional commentary.
+
+  super_casual_chat:
+    name: "Super Casual Chat"
+    description: "Very informal text for chat apps like Discord, Slack, texting"
+    template: |
+      Convert this voice transcription to super casual chat text like you'd type in Discord or texting.
+
+      Guidelines:
+      - Use lowercase for most things
+      - Drop punctuation where it feels natural
+      - Use texting abbreviations (u, ur, gonna, wanna, etc.)
+      - Keep it conversational and relaxed
+      - Use casual contractions
+      - Don't be overly formal at all
+
+      Original transcribed text: {transcript}
+
+      Respond with only the casual chat text, no explanations.
+
+  code_comment:
+    name: "Code Comment"
+    description: "Formats dictated text as proper code comments"
+    template: |
+      Convert this voice-transcribed text into a proper code comment.
+
+      Guidelines:
+      - Make it concise and clear
+      - Use proper grammar and punctuation
+      - Format appropriately for code documentation
+      - Remove filler words and verbal tics
+      - Keep technical accuracy
+
+      Original transcribed text: {transcript}
+
+      Respond with only the formatted comment text, no explanations.
+
+  formal_document:
+    name: "Formal Document"
+    description: "Cleans up dictation for formal writing (emails, documents)"
+    template: |
+      Clean up this voice-transcribed text for formal writing.
+
+      Guidelines:
+      - Correct grammar and punctuation
+      - Remove filler words (um, uh, etc.)
+      - Use complete sentences
+      - Maintain professional tone
+      - Fix any obvious transcription errors
+
+      Original transcribed text: {transcript}
+
+      Respond with only the cleaned text, no explanations.
+
+# Application-specific prompt mappings
+applications:
+  # Chat/messaging apps - super casual with texting slang
+  chat_apps:
+    patterns:
+      - "discord"
+      - "slack"
+      - "telegram"
+      - "signal"
+      - "whatsapp"
+      - "element"        # Matrix client
+      - "riot"           # Matrix client
+    prompt: "super_casual_chat"
+
+  # Web browsers - casual tone for social media, comments, etc.
+  browsers:
+    patterns:
+      - "google-chrome"
+      - "chromium"
+      - "firefox"
+      - "brave-browser"
+      - "microsoft-edge"
+      - "safari"
+    prompt: "casual_web"
+    
+  # Code editors and IDEs - format as comments
+  code_editors:
+    patterns:
+      - "code"           # VSCode
+      - "vim"
+      - "nvim"
+      - "emacs"
+      - "sublime_text"
+      - "atom"
+      - "jetbrains"
+      - "pycharm"
+      - "intellij"
+    prompt: "code_comment"
+    
+  # Office/document applications - formal tone
+  office_apps:
+    patterns:
+      - "libreoffice"
+      - "writer"
+      - "calc"
+      - "impress"
+      - "thunderbird"    # Email client
+      - "evolution"      # Email client
+    prompt: "formal_document"
+    
+  # Text editors - formal tone for documents
+  text_editors:
+    patterns:
+      - "gedit"
+      - "kate"
+      - "mousepad"
+      - "leafpad"
+    prompt: "formal_document"
+    
+  # Default fallback - no processing
+  default:
+    prompt: null

@@ -24,3 +24,8 @@ class WindowDetectionError(DictatorError):
 class LLMProcessingError(DictatorError):
     """Raised when LLM post-processing operations fail."""
     pass
+
+
+class PromptConfigError(DictatorError):
+    """Raised when prompt configuration is invalid."""
+    pass
