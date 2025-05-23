@@ -91,10 +91,14 @@ class LLMPostProcessor:
             logger.info(
                 f"Processing transcript with streaming LLM (length: {len(transcript)} chars)"
             )
-            self._call_llm_streaming(transcript, prompt, text_typer_callback, add_indicator)
+            self._call_llm_streaming(
+                transcript, prompt, text_typer_callback, add_indicator
+            )
 
         except Exception as e:
-            logger.error(f"Streaming LLM processing failed: {e}, typing original transcript")
+            logger.error(
+                f"Streaming LLM processing failed: {e}, typing original transcript"
+            )
             text_typer_callback(transcript)
 
     def _get_context_prompt(self) -> Optional[str]:
@@ -148,7 +152,13 @@ class LLMPostProcessor:
             logger.error(f"LLM API call failed: {e}")
             raise LLMProcessingError(f"Failed to process transcript with LLM: {e}")
 
-    def _call_llm_streaming(self, transcript: str, prompt_template: str, text_typer_callback, add_indicator: bool = False) -> None:
+    def _call_llm_streaming(
+        self,
+        transcript: str,
+        prompt_template: str,
+        text_typer_callback,
+        add_indicator: bool = False,
+    ) -> None:
         """Call the LLM API with streaming to process the transcript.
 
         Args:
@@ -177,22 +187,25 @@ class LLMPostProcessor:
                 try:
                     if chunk.choices and len(chunk.choices) > 0:
                         delta = chunk.choices[0].delta
-                        if hasattr(delta, 'content') and delta.content:
+                        if hasattr(delta, "content") and delta.content:
                             # Type each chunk as it arrives
                             text_typer_callback(delta.content)
                             chunks_processed = True
                 except Exception as chunk_error:
                     logger.warning(f"Error processing chunk: {chunk_error}")
                     continue
-            
+
             # Add indicator at the end if configured and we processed content
             if add_indicator and chunks_processed:
                 indicator = self.prompt_manager.get_llm_indicator()
+                logger.info(f"Adding LLM indicator: {indicator}")
                 text_typer_callback(indicator)
 
         except Exception as e:
             logger.error(f"Streaming LLM API call failed: {e}")
-            raise LLMProcessingError(f"Failed to process transcript with streaming LLM: {e}")
+            raise LLMProcessingError(
+                f"Failed to process transcript with streaming LLM: {e}"
+            )
 
     def is_enabled(self) -> bool:
         """Check if LLM post-processing is enabled and properly configured.

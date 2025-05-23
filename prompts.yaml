@@ -3,7 +3,7 @@
 
 # Global configuration
 config:
-  llm_indicator: "✦"  # Unicode character to append to LLM-generated text
+  llm_indicator: "✦" # Unicode character to append to LLM-generated text
 
 # Reusable prompt definitions
 prompts:
@@ -30,7 +30,7 @@ prompts:
   super_casual_chat:
     name: "Super Casual Chat"
     description: "Very informal text for chat apps like Discord, Slack, texting"
-    add_indicator: true  # Add LLM indicator for this prompt type
+    add_indicator: true # Add LLM indicator for this prompt type
     template: |
       Convert this voice transcription to super casual chat text like you'd type in Discord or texting.
 

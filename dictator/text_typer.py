@@ -22,20 +22,29 @@ class TextTyper:
         logger.info(f"Starting to type text: {preview}")
 
         try:
-            result = subprocess.run(
-                ["xdotool", "type", "--delay", "3", "--", text],
-                capture_output=True,
-                text=True,
-                timeout=XDOTOOL_TIMEOUT,
-            )
+            # Check if text contains non-ASCII characters
+            try:
+                text.encode('ascii')
+                # ASCII text - use normal xdotool type
+                result = subprocess.run(
+                    ["xdotool", "type", "--delay", "3", "--", text],
+                    capture_output=True,
+                    text=True,
+                    timeout=XDOTOOL_TIMEOUT,
+                )
 
-            if result.returncode == 0:
-                logger.info("Text typed successfully")
-            else:
-                logger.error(f"xdotool failed with return code: {result.returncode}")
+                if result.returncode == 0:
+                    logger.info("Text typed successfully")
+                else:
+                    logger.error(f"xdotool failed with return code: {result.returncode}")
 
-            if result.stderr:
-                logger.error(f"xdotool error: {result.stderr}")
+                if result.stderr:
+                    logger.error(f"xdotool error: {result.stderr}")
+
+            except UnicodeEncodeError:
+                # Contains Unicode - type each character using Unicode codes
+                TextTyper._type_unicode_string(text)
+                logger.info("Text typed successfully via Unicode codes")
 
         except subprocess.TimeoutExpired:
             logger.error("xdotool timed out")
@@ -68,20 +77,27 @@ class TextTyper:
         if not sanitized_chunk:
             return
 
-
         try:
-            result = subprocess.run(
-                ["xdotool", "type", "--delay", "1", "--", sanitized_chunk],
-                capture_output=True,
-                text=True,
-                timeout=XDOTOOL_TIMEOUT,
-            )
+            # Check if chunk contains non-ASCII characters
+            try:
+                sanitized_chunk.encode('ascii')
+                # ASCII text - use normal xdotool type
+                result = subprocess.run(
+                    ["xdotool", "type", "--delay", "1", "--", sanitized_chunk],
+                    capture_output=True,
+                    text=True,
+                    timeout=XDOTOOL_TIMEOUT,
+                )
 
-            if result.returncode != 0:
-                logger.error(f"xdotool failed with return code: {result.returncode}")
+                if result.returncode != 0:
+                    logger.error(f"xdotool failed with return code: {result.returncode}")
 
-            if result.stderr:
-                logger.error(f"xdotool error: {result.stderr}")
+                if result.stderr:
+                    logger.error(f"xdotool error: {result.stderr}")
+
+            except UnicodeEncodeError:
+                # Contains Unicode - type each character using Unicode codes
+                TextTyper._type_unicode_string(sanitized_chunk)
 
         except subprocess.TimeoutExpired:
             logger.error("xdotool timed out while typing chunk")
@@ -89,3 +105,43 @@ class TextTyper:
             logger.error("xdotool not found. Please install xdotool.")
         except OSError as e:
             logger.error(f"Error running xdotool for chunk: {e}")
+
+    @staticmethod
+    def _type_unicode_string(text: str) -> None:
+        """Type text containing Unicode characters using xdotool key codes.
+        
+        Args:
+            text: Text containing Unicode characters to type
+        """
+        try:
+            for char in text:
+                if ord(char) > 127:  # Non-ASCII character
+                    # Use Unicode code point with xdotool key
+                    unicode_code = f"U{ord(char):04x}"
+                    result = subprocess.run(
+                        ["xdotool", "key", unicode_code],
+                        capture_output=True,
+                        text=True,
+                        timeout=XDOTOOL_TIMEOUT,
+                    )
+                    
+                    if result.returncode != 0:
+                        logger.error(f"xdotool failed to type Unicode character {char} (U+{ord(char):04X})")
+                else:
+                    # ASCII character - use regular type
+                    result = subprocess.run(
+                        ["xdotool", "type", "--delay", "1", "--", char],
+                        capture_output=True,
+                        text=True,
+                        timeout=XDOTOOL_TIMEOUT,
+                    )
+                    
+                    if result.returncode != 0:
+                        logger.error(f"xdotool failed to type ASCII character {char}")
+                        
+        except subprocess.TimeoutExpired:
+            logger.error("Unicode typing operation timed out")
+        except FileNotFoundError:
+            logger.error("xdotool not found. Please install xdotool.")
+        except OSError as e:
+            logger.error(f"Error in Unicode typing operation: {e}")
