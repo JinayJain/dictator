@@ -40,6 +40,29 @@ prompts:
 
       Respond with only the processed text or command, no explanations.
 
+  context_aware:
+    name: "Context-Aware Formatting"
+    description: "Automatically infers appropriate text formatting based on the active window title and application context"
+    template: |
+      You are a context-aware text formatter. Based on the window title and application context, automatically format the voice transcription to match the appropriate style and tone for that context.
+
+      Window title: {window_title}
+      Original transcribed text: {transcript}
+
+      Guidelines:
+      - Analyze the window title to understand the context (email, document, chat, social media, coding, etc.)
+      - Format the text appropriately for that context:
+        * Email: Professional, proper grammar, complete sentences
+        * Chat/messaging: Casual, abbreviations, lowercase where appropriate
+        * Documents/Word processors: Formal, proper formatting, complete sentences
+        * Code editors: Technical language, programming terminology
+        * Social media: Casual but readable, appropriate hashtags or mentions if context suggests
+        * Browsers: Depends on the site (if recognizable from title)
+      - Maintain the original meaning while adapting the style
+      - If context is unclear, default to a neutral, readable format
+
+      Respond with only the formatted text, no explanations.
+
 # Application-specific prompt mappings
 applications:
   # Chat/messaging apps - super casual with texting slang
@@ -65,6 +88,18 @@ applications:
       - "alacritty"
       - "kitty"
     prompt: "terminal"
+
+  # Browsers and general applications - context-aware formatting
+  browsers:
+    patterns:
+      - "google-chrome"
+      - "chromium"
+      - "firefox"
+      - "safari"
+      - "brave"
+      - "edge"
+      - "opera"
+    prompt: "context_aware"
 
   # Default fallback - no processing
   default:

@@ -123,16 +123,22 @@ class LLMPostProcessor:
 
         Args:
             transcript: The original transcribed text
-            prompt_template: The prompt template with {transcript} placeholder
+            prompt_template: The prompt template with {transcript} and optional {window_title} placeholders
 
         Returns:
             Processed text from the LLM, or None if call fails
         """
         try:
-            # Format the prompt with the transcript
-            formatted_prompt = (
-                textwrap.dedent(prompt_template).strip().format(transcript=transcript)
-            )
+            # Get window title for context-aware prompts
+            window_info = self.window_detector.get_focused_window_info()
+            window_title = window_info.get("name", "")
+
+            # Format the prompt with transcript and window title
+            formatted_prompt = textwrap.dedent(
+                self.prompt_manager.format_prompt(
+                    prompt_template, transcript, window_title
+                )
+            ).strip()
 
             # Call LiteLLM
             response = litellm.completion(
@@ -166,15 +172,21 @@ class LLMPostProcessor:
 
         Args:
             transcript: The original transcribed text
-            prompt_template: The prompt template with {transcript} placeholder
+            prompt_template: The prompt template with {transcript} and optional {window_title} placeholders
             text_typer_callback: Function to call for each chunk of text to type
             add_indicator: Whether to add LLM indicator at the end
         """
         try:
-            # Format the prompt with the transcript
-            formatted_prompt = (
-                textwrap.dedent(prompt_template).strip().format(transcript=transcript)
-            )
+            # Get window title for context-aware prompts
+            window_info = self.window_detector.get_focused_window_info()
+            window_title = window_info.get("name", "")
+
+            # Format the prompt with transcript and window title
+            formatted_prompt = textwrap.dedent(
+                self.prompt_manager.format_prompt(
+                    prompt_template, transcript, window_title
+                )
+            ).strip()
 
             # Call LiteLLM with streaming
             response = litellm.completion(

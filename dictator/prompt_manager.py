@@ -218,3 +218,23 @@ class PromptManager:
             Unicode character to append to LLM-generated text
         """
         return self.config.get("config", {}).get("llm_indicator", "✦")
+
+    def format_prompt(
+        self, template: str, transcript: str, window_title: Optional[str] = None
+    ) -> str:
+        """Format a prompt template with transcript and optional window title.
+
+        Args:
+            template: The prompt template string
+            transcript: The transcribed text
+            window_title: Optional window title for context-aware prompts
+
+        Returns:
+            Formatted prompt string ready for LLM processing
+        """
+        format_kwargs = {"transcript": transcript}
+
+        if window_title is not None:
+            format_kwargs["window_title"] = window_title
+
+        return template.format(**format_kwargs)
