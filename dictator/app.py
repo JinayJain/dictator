@@ -202,6 +202,8 @@ class DictatorApp:
                         llm_processor.process_transcript_streaming(
                             transcript, text_typer.type_text_chunk
                         )
+                        # Flush any remaining buffered content (discards trailing newlines)
+                        text_typer.flush_remaining_content()
                     else:
                         # No LLM processing, type original transcript
                         text_typer.type_text(transcript)

@@ -56,7 +56,7 @@ prompts:
         * Chat/messaging: Casual, abbreviations, lowercase where appropriate
         * Documents/Word processors: Formal, proper formatting, complete sentences
         * Code editors: Technical language, programming terminology
-        * Social media: Casual but readable, appropriate hashtags or mentions if context suggests
+        * Social media: Casual, lowercase, but readable, appropriate hashtags or mentions if context suggests
         * Browsers: Depends on the site (if recognizable from title)
       - Maintain the original meaning while adapting the style
       - If context is unclear, default to a neutral, readable format
