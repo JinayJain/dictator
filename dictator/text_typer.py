@@ -64,8 +64,11 @@ class TextTyper:
         # Replace newlines with spaces to avoid hitting enter
         sanitized_chunk = text_chunk.replace('\n', ' ').replace('\r', ' ')
         
+        # Remove trailing spaces and newlines only (preserve internal spacing)
+        sanitized_chunk = sanitized_chunk.rstrip(' \n\r\t')
+        
         # Skip if chunk becomes empty after sanitization
-        if not sanitized_chunk.strip():
+        if not sanitized_chunk:
             return
 
         logger.debug(f"Typing chunk: {sanitized_chunk}")
