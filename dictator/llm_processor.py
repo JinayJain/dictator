@@ -69,19 +69,19 @@ class LLMPostProcessor:
             logger.error(f"LLM processing failed: {e}, using original transcript")
             return transcript
 
-    def process_transcript_streaming(self, transcript: str, text_typer_callback):
+    def process_transcript_streaming(self, transcript: str, text_typer):
         """Process transcript with streaming output and real-time typing.
 
         Args:
             transcript: The original transcribed text
-            text_typer_callback: Function to call for each chunk of text to type
+            text_typer: TextTyper instance for typing text chunks
         """
         try:
             # Get the context-specific prompt
             prompt = self._get_context_prompt()
 
             if not prompt:
-                text_typer_callback(transcript)
+                text_typer.type_text_chunk(transcript)
                 return
 
             # Check if we should add indicator for this app
@@ -92,15 +92,13 @@ class LLMPostProcessor:
             logger.info(
                 f"Processing transcript with streaming LLM (length: {len(transcript)} chars)"
             )
-            self._call_llm_streaming(
-                transcript, prompt, text_typer_callback, add_indicator
-            )
+            self._call_llm_streaming(transcript, prompt, text_typer, add_indicator)
 
         except Exception as e:
             logger.error(
                 f"Streaming LLM processing failed: {e}, typing original transcript"
             )
-            text_typer_callback(transcript)
+            text_typer.type_text_chunk(transcript)
 
     def _get_context_prompt(self) -> Optional[str]:
         """Get the appropriate prompt based on the current application context.
@@ -165,7 +163,7 @@ class LLMPostProcessor:
         self,
         transcript: str,
         prompt_template: str,
-        text_typer_callback,
+        text_typer,
         add_indicator: bool = False,
     ) -> None:
         """Call the LLM API with streaming to process the transcript.
@@ -173,7 +171,7 @@ class LLMPostProcessor:
         Args:
             transcript: The original transcribed text
             prompt_template: The prompt template with {transcript} and optional {window_title} placeholders
-            text_typer_callback: Function to call for each chunk of text to type
+            text_typer: TextTyper instance for typing text chunks
             add_indicator: Whether to add LLM indicator at the end
         """
         try:
@@ -206,7 +204,7 @@ class LLMPostProcessor:
                         delta = chunk.choices[0].delta
                         if hasattr(delta, "content") and delta.content:
                             # Type each chunk as it arrives
-                            text_typer_callback(delta.content)
+                            text_typer.type_text_chunk(delta.content)
                             chunks_processed = True
                 except Exception as chunk_error:
                     logger.warning(f"Error processing chunk: {chunk_error}")
@@ -214,9 +212,11 @@ class LLMPostProcessor:
 
             # Add indicator at the end if configured and we processed content
             if add_indicator and chunks_processed:
+                # Flush any buffered newlines before adding indicator
+                text_typer.flush_remaining_content()
                 indicator = self.prompt_manager.get_llm_indicator()
                 logger.info(f"Adding LLM indicator: {indicator}")
-                text_typer_callback(indicator)
+                text_typer.type_text_chunk(indicator)
 
         except Exception as e:
             logger.error(f"Streaming LLM API call failed: {e}")
