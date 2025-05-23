@@ -5,12 +5,13 @@ from pathlib import Path
 
 from deepgram import DeepgramClient, FileSource, PrerecordedOptions
 
-from .exceptions import TranscriptionError
+from ..exceptions import TranscriptionError
+from .base import TranscriptionBackend
 
 logger = logging.getLogger(__name__)
 
 
-class TranscriptionService:
+class DeepgramBackend(TranscriptionBackend):
     """Handles audio transcription using Deepgram."""
 
     def __init__(self):
@@ -18,7 +19,7 @@ class TranscriptionService:
 
     def transcribe_file(self, audio_file_path: Path) -> str:
         """Transcribe audio file and return transcript."""
-        logger.info(f"Starting transcription of: {audio_file_path}")
+        logger.info(f"Starting Deepgram transcription of: {audio_file_path}")
 
         exists, file_size = self._validate_audio_file(audio_file_path)
         if not exists:
@@ -53,7 +54,7 @@ class TranscriptionService:
             return self._extract_transcript(response)
 
         except Exception as e:
-            raise TranscriptionError(f"Transcription failed: {e}")
+            raise TranscriptionError(f"Deepgram transcription failed: {e}")
 
     def _validate_audio_file(self, audio_file_path: Path) -> tuple[bool, int]:
         """Validate audio file exists and get size."""
@@ -85,7 +86,7 @@ class TranscriptionService:
         transcript = alternative.transcript
         confidence = getattr(alternative, "confidence", "unknown")
 
-        logger.info(f"Transcription completed, confidence: {confidence}")
+        logger.info(f"Deepgram transcription completed, confidence: {confidence}")
         logger.debug(f"Raw transcript: '{transcript}'")
 
         cleaned_transcript = transcript.strip()

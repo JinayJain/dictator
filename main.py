@@ -39,11 +39,17 @@ def main() -> None:
         choices=["begin", "end"],
         help="Command to execute: 'begin' to start recording, 'end' to stop",
     )
+    parser.add_argument(
+        "--backend",
+        choices=["deepgram", "assemblyai"],
+        default="deepgram",
+        help="Transcription backend to use (default: deepgram)",
+    )
     
     args = parser.parse_args()
-    logger.info(f"Executing command: {args.command}")
+    logger.info(f"Executing command: {args.command} with backend: {args.backend}")
     
-    app = DictatorApp()
+    app = DictatorApp(backend=args.backend)
     
     try:
         if args.command == "begin":

@@ -10,8 +10,9 @@ from .audio_recorder import AudioRecorder
 from .constants import AUDIO_FILE_PATH, LOCKFILE_PATH
 from .exceptions import DictatorError, TranscriptionError
 from .process_manager import ProcessManager
+from .system_tray import SystemTrayManager
 from .text_typer import TextTyper
-from .transcription import TranscriptionService
+from .transcription import create_transcription_backend
 
 logger = logging.getLogger(__name__)
 
@@ -19,11 +20,12 @@ logger = logging.getLogger(__name__)
 class DictatorApp:
     """Main application class for Dictator."""
     
-    def __init__(self):
+    def __init__(self, backend: str = "deepgram"):
         self.process_manager = ProcessManager(LOCKFILE_PATH)
         self.recorder = AudioRecorder(AUDIO_FILE_PATH)
-        self.transcription_service = TranscriptionService()
+        self.transcription_service = create_transcription_backend(backend)
         self.text_typer = TextTyper()
+        self.system_tray = SystemTrayManager()
         self._setup_signal_handlers()
     
     def _setup_signal_handlers(self) -> None:
@@ -41,8 +43,14 @@ class DictatorApp:
         logger.info("Starting begin command")
         
         try:
+            # Start system tray
+            self.system_tray.start()
+            
             self.process_manager.create_lockfile()
             self.recorder.start_recording()
+            
+            # Update tray to recording state
+            self.system_tray.set_recording_state()
             
             logger.info("Recording started. Use 'end' command to stop and transcribe.")
             
@@ -99,6 +107,9 @@ class DictatorApp:
         
         if exists and file_size > 0:
             try:
+                # Update tray to transcribing state
+                self.system_tray.set_transcribing_state()
+                
                 logger.info(f"Starting transcription of {file_size} byte WAV file...")
                 transcript = self.transcription_service.transcribe_file(AUDIO_FILE_PATH)
                 
@@ -117,6 +128,7 @@ class DictatorApp:
         
         # Cleanup
         self.process_manager._cleanup_lockfile()
+        self.system_tray.stop()
         
         logger.info("Cleanup completed, exiting")
         sys.exit(0)
