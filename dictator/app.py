@@ -4,6 +4,7 @@ import logging
 import os
 import signal
 import sys
+import time
 
 from .audio_recorder import AudioRecorder
 from .constants import AUDIO_FILE_PATH, LOCKFILE_PATH
@@ -84,14 +85,21 @@ class DictatorApp:
         """Cleanup resources and exit."""
         logger.info("Starting cleanup")
         
-        # Stop recording
-        self.recorder.stop_recording()
+        # Stop recording and get audio data from memory
+        logger.debug("About to stop recording...")
+        audio_data = self.recorder.stop_recording()
         
-        # Process transcription
+        # Log memory buffer info
+        memory_size = len(audio_data)
+        logger.debug(f"Retrieved {memory_size} bytes from memory buffer")
+        
+        # Check if WAV file was created
         exists, file_size = self.recorder.get_file_info()
+        logger.debug(f"WAV file after memory->file conversion: exists={exists}, size={file_size}")
+        
         if exists and file_size > 0:
             try:
-                logger.info("Starting transcription...")
+                logger.info(f"Starting transcription of {file_size} byte WAV file...")
                 transcript = self.transcription_service.transcribe_file(AUDIO_FILE_PATH)
                 
                 if transcript:
@@ -102,10 +110,10 @@ class DictatorApp:
                     
             except TranscriptionError as e:
                 logger.error(f"Transcription failed: {e}")
-        elif exists:
-            logger.warning("Audio file is empty")
+        elif memory_size > 0:
+            logger.warning(f"Had {memory_size} bytes in memory but WAV file creation failed")
         else:
-            logger.warning("No audio file found")
+            logger.warning("No audio data recorded")
         
         # Cleanup
         self.process_manager._cleanup_lockfile()
