@@ -2,6 +2,7 @@
 
 import logging
 import os
+import textwrap
 from typing import Optional
 
 import litellm
@@ -129,7 +130,9 @@ class LLMPostProcessor:
         """
         try:
             # Format the prompt with the transcript
-            formatted_prompt = prompt_template.format(transcript=transcript)
+            formatted_prompt = (
+                textwrap.dedent(prompt_template).strip().format(transcript=transcript)
+            )
 
             # Call LiteLLM
             response = litellm.completion(
@@ -169,7 +172,9 @@ class LLMPostProcessor:
         """
         try:
             # Format the prompt with the transcript
-            formatted_prompt = prompt_template.format(transcript=transcript)
+            formatted_prompt = (
+                textwrap.dedent(prompt_template).strip().format(transcript=transcript)
+            )
 
             # Call LiteLLM with streaming
             response = litellm.completion(
