@@ -38,7 +38,7 @@ prompts:
 
       Original transcribed text: {transcript}
 
-      Respond with only the processed text or command, no explanations.
+      Respond with only the processed text or command, no explanations or additional formatting.
 
   context_aware:
     name: "Context-Aware Formatting"

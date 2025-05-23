@@ -9,6 +9,7 @@ import litellm
 
 from .exceptions import LLMProcessingError
 from .prompt_manager import PromptManager
+from .text_typer import TextTyper
 from .window_detector import WindowDetector
 
 logger = logging.getLogger(__name__)
@@ -17,7 +18,7 @@ logger = logging.getLogger(__name__)
 class LLMPostProcessor:
     """Post-processes transcribed text using LLM based on application context."""
 
-    def __init__(self, model: str = "gemini/gemini-2.0-flash-lite"):
+    def __init__(self, model: str = "gemini/gemini-2.0-flash"):
         """Initialize the LLM post-processor.
 
         Args:
@@ -163,7 +164,7 @@ class LLMPostProcessor:
         self,
         transcript: str,
         prompt_template: str,
-        text_typer,
+        text_typer: TextTyper,
         add_indicator: bool = False,
     ) -> None:
         """Call the LLM API with streaming to process the transcript.
