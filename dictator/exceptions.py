@@ -14,3 +14,13 @@ class RecordingError(DictatorError):
 class TranscriptionError(DictatorError):
     """Raised when transcription operations fail."""
     pass
+
+
+class WindowDetectionError(DictatorError):
+    """Raised when window detection operations fail."""
+    pass
+
+
+class LLMProcessingError(DictatorError):
+    """Raised when LLM post-processing operations fail."""
+    pass

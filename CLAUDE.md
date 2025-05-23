@@ -5,6 +5,7 @@ Voice recording and transcription CLI tool that records audio using PulseAudio, 
 ## Project Overview
 
 This is a professional Python CLI application with a modular architecture:
+
 - Records audio using `parec` (PulseAudio)
 - Transcribes audio using Deepgram API
 - Types transcribed text using `xdotool`
@@ -35,17 +36,20 @@ main.py                  # CLI entry point
 ## Development Guidelines
 
 ### Dependencies
+
 - Always use `uv` for dependencies like `uv add` or `uv remove`
 - Environment variables loaded via `python-dotenv`
 - Requires `DEEPGRAM_API_KEY` environment variable for Deepgram backend
 - Requires `ASSEMBLYAI_API_KEY` environment variable for AssemblyAI backend
 
 ### System Dependencies
+
 - `parec` (PulseAudio utilities) for audio recording
 - `xdotool` for text typing automation
 - Works on Linux systems with PulseAudio and X11
 
 ### Code Style
+
 - Use type hints throughout (already implemented)
 - Follow professional OOP patterns with focused classes
 - Comprehensive logging at DEBUG level by default
@@ -54,6 +58,7 @@ main.py                  # CLI entry point
 - Constants defined in dedicated module
 
 ### Architecture Patterns
+
 - **Single Responsibility**: Each class has one focused purpose
 - **Dependency Injection**: Components passed to orchestrator
 - **Error Handling**: Custom exception hierarchy with specific error types
@@ -61,6 +66,7 @@ main.py                  # CLI entry point
 - **Signal Handling**: Graceful shutdown on SIGTERM/SIGINT
 
 ### Key Classes
+
 - `DictatorApp`: Main orchestrator that coordinates all components
 - `ProcessManager`: Handles PID files and process lifecycle
 - `AudioRecorder`: Encapsulates PulseAudio recording logic
@@ -70,24 +76,29 @@ main.py                  # CLI entry point
 - `TextTyper`: xdotool automation
 
 ### Commands
+
 - `python main.py begin` - Start recording with default Deepgram backend
 - `python main.py begin --backend assemblyai` - Start recording with AssemblyAI backend
 - `python main.py end` - Stop recording and transcribe (sends SIGTERM to process)
 
 ### Configuration
+
 All constants in `dictator/constants.py`:
+
 - File paths for lockfile and audio file
 - Audio settings (16kHz, mono, 16-bit)
 - Timeout values for process termination
 - Transcription backend selection via `--backend` CLI argument (defaults to "deepgram", can be "assemblyai")
 
 ### Error Handling
+
 - `DictatorError`: Base exception class
 - `RecordingError`: Issues with audio recording
 - `TranscriptionError`: Issues with Deepgram API
 - All exceptions logged with full context
 
 ### Logging
+
 - DEBUG level enabled by default for troubleshooting
 - Structured logging with timestamps
 - Comprehensive logging in all operations for debugging transcription issues
@@ -116,4 +127,5 @@ All constants in `dictator/constants.py`:
 
 ## Claude Memory
 
-- Do not test the app unless instructed to do so
+- Audio recording should always start ASAP as a priority
+- Don't run the program on your own. I will run it.

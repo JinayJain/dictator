@@ -10,9 +10,6 @@ from .audio_recorder import AudioRecorder
 from .constants import AUDIO_FILE_PATH, LOCKFILE_PATH
 from .exceptions import DictatorError, TranscriptionError
 from .process_manager import ProcessManager
-from .system_tray import SystemTrayManager
-from .text_typer import TextTyper
-from .transcription import create_transcription_backend
 
 logger = logging.getLogger(__name__)
 
@@ -21,12 +18,84 @@ class DictatorApp:
     """Main application class for Dictator."""
     
     def __init__(self, backend: str = "deepgram"):
+        # Store backend for lazy initialization
+        self.backend = backend
+        
+        # Essential components for recording startup
         self.process_manager = ProcessManager(LOCKFILE_PATH)
         self.recorder = AudioRecorder(AUDIO_FILE_PATH)
-        self.transcription_service = create_transcription_backend(backend)
-        self.text_typer = TextTyper()
-        self.system_tray = SystemTrayManager()
+        
+        # Components that will be lazily initialized
+        self.transcription_service = None
+        self._transcription_initialized = False
+        self.text_typer = None
+        self._text_typer_initialized = False
+        self.system_tray = None
+        self._system_tray_initialized = False
+        self.llm_processor = None
+        self._llm_processor_initialized = False
+        
         self._setup_signal_handlers()
+    
+    def _get_transcription_service(self):
+        """Lazily initialize and return the transcription service if not already done."""
+        if not self._transcription_initialized:
+            try:
+                from .transcription import create_transcription_backend
+                self.transcription_service = create_transcription_backend(self.backend)
+                logger.debug(f"Transcription service initialized: {self.backend}")
+            except Exception as e:
+                logger.error(f"Failed to initialize transcription service: {e}")
+                raise
+            finally:
+                self._transcription_initialized = True
+        
+        return self.transcription_service
+    
+    def _get_text_typer(self):
+        """Lazily initialize and return the text typer if not already done."""
+        if not self._text_typer_initialized:
+            try:
+                from .text_typer import TextTyper
+                self.text_typer = TextTyper()
+                logger.debug("Text typer initialized")
+            except Exception as e:
+                logger.error(f"Failed to initialize text typer: {e}")
+                raise
+            finally:
+                self._text_typer_initialized = True
+        
+        return self.text_typer
+    
+    def _get_system_tray(self):
+        """Lazily initialize and return the system tray if not already done."""
+        if not self._system_tray_initialized:
+            try:
+                from .system_tray import SystemTrayManager
+                self.system_tray = SystemTrayManager()
+                logger.debug("System tray initialized")
+            except Exception as e:
+                logger.error(f"Failed to initialize system tray: {e}")
+                raise
+            finally:
+                self._system_tray_initialized = True
+        
+        return self.system_tray
+    
+    def _get_llm_processor(self):
+        """Lazily initialize and return the LLM processor if not already done."""
+        if not self._llm_processor_initialized:
+            try:
+                from .llm_processor import LLMPostProcessor
+                self.llm_processor = LLMPostProcessor()
+                logger.info("LLM post-processing enabled")
+            except Exception as e:
+                logger.info(f"LLM post-processing disabled: {e}")
+                self.llm_processor = None
+            finally:
+                self._llm_processor_initialized = True
+        
+        return self.llm_processor
     
     def _setup_signal_handlers(self) -> None:
         """Setup signal handlers for graceful shutdown."""
@@ -43,16 +112,19 @@ class DictatorApp:
         logger.info("Starting begin command")
         
         try:
-            # Start system tray
-            self.system_tray.start()
-            
+            # Start recording ASAP - only essential components
             self.process_manager.create_lockfile()
             self.recorder.start_recording()
-            
-            # Update tray to recording state
-            self.system_tray.set_recording_state()
-            
             logger.info("Recording started. Use 'end' command to stop and transcribe.")
+            
+            # Now that recording is started, initialize system tray in background
+            try:
+                system_tray = self._get_system_tray()
+                system_tray.start()
+                system_tray.set_recording_state()
+                logger.debug("System tray started")
+            except Exception as e:
+                logger.warning(f"System tray initialization failed, continuing without it: {e}")
             
             # Keep running until signal received
             logger.debug("Entering main loop, waiting for signals")
@@ -107,15 +179,26 @@ class DictatorApp:
         
         if exists and file_size > 0:
             try:
-                # Update tray to transcribing state
-                self.system_tray.set_transcribing_state()
+                # Update tray to transcribing state (if available)
+                if self._system_tray_initialized and self.system_tray:
+                    self.system_tray.set_transcribing_state()
                 
                 logger.info(f"Starting transcription of {file_size} byte WAV file...")
-                transcript = self.transcription_service.transcribe_file(AUDIO_FILE_PATH)
+                transcription_service = self._get_transcription_service()
+                transcript = transcription_service.transcribe_file(AUDIO_FILE_PATH)
                 
                 if transcript:
                     logger.info(f"Transcription successful, length: {len(transcript)} chars")
-                    self.text_typer.type_text(transcript)
+                    
+                    # Apply LLM post-processing if available
+                    final_text = transcript
+                    llm_processor = self._get_llm_processor()
+                    if llm_processor and llm_processor.is_enabled():
+                        logger.debug("Applying LLM post-processing...")
+                        final_text = llm_processor.process_transcript(transcript)
+                    
+                    text_typer = self._get_text_typer()
+                    text_typer.type_text(final_text)
                 else:
                     logger.warning("No transcript generated")
                     
@@ -128,7 +211,8 @@ class DictatorApp:
         
         # Cleanup
         self.process_manager._cleanup_lockfile()
-        self.system_tray.stop()
+        if self._system_tray_initialized and self.system_tray:
+            self.system_tray.stop()
         
         logger.info("Cleanup completed, exiting")
         sys.exit(0)

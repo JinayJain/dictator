@@ -1,6 +1,7 @@
 """Audio transcription service using AssemblyAI."""
 
 import logging
+import os
 from pathlib import Path
 
 try:
@@ -23,6 +24,7 @@ class AssemblyAIBackend(TranscriptionBackend):
                 "AssemblyAI package not installed. Run: uv add assemblyai"
             )
 
+        aai.settings.api_key = os.getenv("ASSEMBLYAI_API_KEY")
         config = aai.TranscriptionConfig(speech_model=aai.SpeechModel.best)
         self.transcriber = aai.Transcriber(config=config)
 
