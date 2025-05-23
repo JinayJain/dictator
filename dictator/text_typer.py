@@ -24,7 +24,7 @@ class TextTyper:
 
         try:
             result = subprocess.run(
-                ["xdotool", "type", text, "--delay", "3"],
+                ["xdotool", "type", "--delay", "3", "--", text],
                 capture_output=True,
                 text=True,
                 timeout=XDOTOOL_TIMEOUT,
