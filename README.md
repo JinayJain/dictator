@@ -86,6 +86,68 @@ applications:
     prompt: "your_custom_prompt"
 ```
 
+## Hotkey Setup with sxhkd
+
+For convenient voice dictation, you can set up global hotkeys using `sxhkd`. This allows you to start/stop dictation from anywhere on your system.
+
+### Install sxhkd
+
+```bash
+# Ubuntu/Debian
+sudo apt install sxhkd
+
+# Arch Linux
+sudo pacman -S sxhkd
+
+# Fedora
+sudo dnf install sxhkd
+```
+
+### Configure Hotkeys
+
+Add these bindings to your `~/.config/sxhkd/sxhkdrc` file:
+
+```bash
+# Start dictation with Scroll Lock key
+Scroll_Lock
+    cd $DICTATOR_DIR ; uv run main.py begin --backend deepgram
+
+# Stop dictation on Scroll Lock key release
+@Scroll_Lock
+    cd $DICTATOR_DIR ; uv run main.py end
+```
+
+### Environment Setup
+
+Set the `DICTATOR_DIR` environment variable to point to your dictator installation. Add this to your `~/.bashrc` or `~/.zshrc`:
+
+```bash
+export DICTATOR_DIR="/path/to/dictator"
+```
+
+**Note**: Replace `/path/to/dictator` with the actual path to your dictator installation.
+
+### Start sxhkd
+
+Add sxhkd to your window manager startup or run it manually:
+
+```bash
+# Start sxhkd (run this once per session)
+sxhkd &
+
+# Or add to your ~/.xinitrc or window manager config
+```
+
+Alternatively, you can set up sxhkd as a systemd user service for automatic startup.
+
+### Usage
+
+1. Press and hold `Scroll Lock` to start recording
+2. Speak your message while holding the key
+3. Release `Scroll Lock` to stop recording and type the transcribed text
+
+The text will be automatically typed at your current cursor position.
+
 ## Features
 
 - **Multi-Backend Transcription**: Support for Deepgram and AssemblyAI APIs
