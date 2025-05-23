@@ -3,30 +3,10 @@
 
 # Global configuration
 config:
-  llm_indicator: "✦" # Unicode character to append to LLM-generated text
+  llm_indicator: " ✦" # Unicode character to append to LLM-generated text
 
 # Reusable prompt definitions
 prompts:
-  casual_web:
-    name: "Casual Web Text"
-    description: "Makes formal dictation casual for web interactions (social media, comments, chat)"
-    template: |
-      You are helping to post-process voice-to-text transcription for web browsing.
-
-      The user dictated text while using a web browser. Your task is to make the text more informal and conversational, as if typing casually on the web (like in comments, social media, chat, etc.).
-
-      Guidelines:
-      - Make the text more casual and informal
-      - Use contractions (don't, can't, won't, etc.)
-      - Remove overly formal language
-      - Keep the core meaning intact
-      - Don't add new information or change facts
-      - If the text is already informal, minimal changes are needed
-
-      Original transcribed text: {transcript}
-
-      Respond with only the processed text, no explanations or additional commentary.
-
   super_casual_chat:
     name: "Super Casual Chat"
     description: "Very informal text for chat apps like Discord, Slack, texting"
@@ -36,7 +16,6 @@ prompts:
 
       Guidelines:
       - Use lowercase for most things
-      - Drop punctuation where it feels natural
       - Use texting abbreviations (u, ur, gonna, wanna, etc.)
       - Keep it conversational and relaxed
       - Use casual contractions
@@ -46,39 +25,20 @@ prompts:
 
       Respond with only the casual chat text, no explanations.
 
-  code_comment:
-    name: "Code Comment"
-    description: "Formats dictated text as proper code comments"
+  terminal:
+    name: "Terminal Command Inference"
+    description: "Infers whether the user is trying to type a terminal command or just speaking in general"
     template: |
-      Convert this voice-transcribed text into a proper code comment.
+      Analyze the following voice transcription and determine if the user is trying to type a terminal command or just speaking in general.
 
       Guidelines:
-      - Make it concise and clear
-      - Use proper grammar and punctuation
-      - Format appropriately for code documentation
-      - Remove filler words and verbal tics
-      - Keep technical accuracy
+      - If the user is trying to type a terminal command, transform it into the appropriate command.
+      - If the user is just speaking in general, output the text as is.
+      - Ensure the command is valid and follows terminal syntax.
 
       Original transcribed text: {transcript}
 
-      Respond with only the formatted comment text, no explanations.
-
-  formal_document:
-    name: "Formal Document"
-    description: "Cleans up dictation for formal writing (emails, documents)"
-    template: |
-      Clean up this voice-transcribed text for formal writing.
-
-      Guidelines:
-      - Correct grammar and punctuation
-      - Remove filler words (um, uh, etc.)
-      - Use complete sentences
-      - Maintain professional tone
-      - Fix any obvious transcription errors
-
-      Original transcribed text: {transcript}
-
-      Respond with only the cleaned text, no explanations.
+      Respond with only the processed text or command, no explanations.
 
 # Application-specific prompt mappings
 applications:
@@ -94,50 +54,17 @@ applications:
       - "riot" # Matrix client
     prompt: "super_casual_chat"
 
-  # Web browsers - casual tone for social media, comments, etc.
-  browsers:
+  # Terminal applications - infer terminal commands
+  terminals:
     patterns:
-      - "google-chrome"
-      - "chromium"
-      - "firefox"
-      - "brave-browser"
-      - "microsoft-edge"
-      - "safari"
-    prompt: "casual_web"
-
-  # Code editors and IDEs - format as comments
-  code_editors:
-    patterns:
-      - "code" # VSCode
-      - "vim"
-      - "nvim"
-      - "emacs"
-      - "sublime_text"
-      - "atom"
-      - "jetbrains"
-      - "pycharm"
-      - "intellij"
-    prompt: "code_comment"
-
-  # Office/document applications - formal tone
-  office_apps:
-    patterns:
-      - "libreoffice"
-      - "writer"
-      - "calc"
-      - "impress"
-      - "thunderbird" # Email client
-      - "evolution" # Email client
-    prompt: "formal_document"
-
-  # Text editors - formal tone for documents
-  text_editors:
-    patterns:
-      - "gedit"
-      - "kate"
-      - "mousepad"
-      - "leafpad"
-    prompt: "formal_document"
+      - "terminal"
+      - "iterm2"
+      - "konsole"
+      - "gnome-terminal"
+      - "xterm"
+      - "alacritty"
+      - "kitty"
+    prompt: "terminal"
 
   # Default fallback - no processing
   default:

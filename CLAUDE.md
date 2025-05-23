@@ -129,3 +129,4 @@ All constants in `dictator/constants.py`:
 
 - Audio recording should always start ASAP as a priority
 - Don't run the program on your own. I will run it.
+- Apply formatting with `ruff format` after every change
