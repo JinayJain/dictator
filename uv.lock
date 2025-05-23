@@ -173,6 +173,7 @@ dependencies = [
     { name = "deepgram-sdk" },
     { name = "pyaudio" },
     { name = "python-dotenv" },
+    { name = "xdotool" },
 ]
 
 [package.metadata]
@@ -180,6 +181,7 @@ requires-dist = [
     { name = "deepgram-sdk", specifier = ">=4.1.0" },
     { name = "pyaudio", specifier = ">=0.2.14" },
     { name = "python-dotenv", specifier = ">=1.1.0" },
+    { name = "xdotool", specifier = ">=0.4.0" },
 ]
 
 [[package]]
@@ -516,6 +518,15 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/86/eb/20b6cdf273913d0ad05a6a14aed4b9a85591c18a987a3d47f20fa13dcc47/websockets-15.0.1-cp313-cp313-win32.whl", hash = "sha256:ba9e56e8ceeeedb2e080147ba85ffcd5cd0711b89576b83784d8605a7df455fa", size = 176393, upload-time = "2025-03-05T20:02:53.814Z" },
     { url = "https://files.pythonhosted.org/packages/1b/6c/c65773d6cab416a64d191d6ee8a8b1c68a09970ea6909d16965d26bfed1e/websockets-15.0.1-cp313-cp313-win_amd64.whl", hash = "sha256:e09473f095a819042ecb2ab9465aee615bd9c2028e4ef7d933600a8401c79561", size = 176837, upload-time = "2025-03-05T20:02:55.237Z" },
     { url = "https://files.pythonhosted.org/packages/fa/a8/5b41e0da817d64113292ab1f8247140aac61cbf6cfd085d6a0fa77f4984f/websockets-15.0.1-py3-none-any.whl", hash = "sha256:f7a866fbc1e97b5c617ee4116daaa09b722101d4a3c170c787450ba409f9736f", size = 169743, upload-time = "2025-03-05T20:03:39.41Z" },
+]
+
+[[package]]
+name = "xdotool"
+version = "0.4.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/f1/d6/5160a419950d49289d828da17a11a70675b03b93ec420d0c6a201d01c5f1/xdotool-0.4.0.tar.gz", hash = "sha256:9e927d0e87479978a32c3f87c82ef536bd6b12750959067c08e1149aa2832739", size = 1917, upload-time = "2023-03-11T21:09:55.885Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/2e/b9/6d8f64a1f865a00da084e23b37deaf391632eb3f98a34211a2b7032b304f/xdotool-0.4.0-py3-none-any.whl", hash = "sha256:84a5a983bc161e24c0de1f709af80bc9244610e2c99a886e69d71eb115bf0ad8", size = 2137, upload-time = "2023-03-11T21:09:54.388Z" },
 ]
 
 [[package]]

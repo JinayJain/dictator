@@ -8,4 +8,5 @@ dependencies = [
     "deepgram-sdk>=4.1.0",
     "pyaudio>=0.2.14",
     "python-dotenv>=1.1.0",
+    "xdotool>=0.4.0",
 ]

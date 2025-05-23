@@ -1,87 +1,133 @@
+import argparse
+import os
+import signal
+import subprocess
+import sys
+
 from deepgram import DeepgramClient, LiveOptions, LiveTranscriptionEvents, Microphone
 from dotenv import load_dotenv
 
 load_dotenv()
 
-# We will collect the is_final=true messages here so we can use them when the person finishes speaking
-is_finals = []
+
+def type(text: str):
+    subprocess.run(["xdotool", "type", text])
 
 
-def main():
+def begin():
+    lockfile = "/tmp/dictator.pid"
+
+    # Write PID to lockfile
+    with open(lockfile, "w") as f:
+        f.write(str(os.getpid()))
+
+    # Global variables for cleanup
+    microphone = None
+    dg_connection = None
+
+    def cleanup_and_exit(signum=None, frame=None):
+        print("\nStopping transcription...")
+        if microphone:
+            microphone.finish()
+        if dg_connection:
+            dg_connection.finish()
+        # Remove lockfile
+        if os.path.exists(lockfile):
+            os.remove(lockfile)
+        sys.exit(0)
+
+    # Register signal handlers
+    signal.signal(signal.SIGTERM, cleanup_and_exit)
+    signal.signal(signal.SIGINT, cleanup_and_exit)
+
     try:
         # Create Deepgram client
         deepgram = DeepgramClient()
-        dg_connection = deepgram.listen.live.v("1")
 
-        # Event handlers
-        def on_open(self, open, **kwargs):
-            print("Connection Open")
+        # Get WebSocket connection
+        dg_connection = deepgram.listen.websocket.v("1")
 
+        # Event handler for transcription results
         def on_message(self, result, **kwargs):
-            global is_finals
             sentence = result.channel.alternatives[0].transcript
-            if len(sentence) == 0:
-                return
-            if result.is_final:
-                is_finals.append(sentence)
-                if result.speech_final:
-                    utterance = " ".join(is_finals)
-                    print(f"Speech Final: {utterance}")
-                    is_finals = []
-                else:
-                    print(f"Is Final: {sentence}")
-            else:
-                print(f"Interim Results: {sentence}")
+            if len(sentence) > 0 and result.is_final:
+                print(f"Transcript: {sentence}")
+                type(sentence + " ")
 
-        def on_close(self, close, **kwargs):
-            print("Connection Closed")
-
-        def on_error(self, error, **kwargs):
-            print(f"Handled Error: {error}")
-
-        # Set up event handlers
-        dg_connection.on(LiveTranscriptionEvents.Open, on_open)
+        # Register event handler
         dg_connection.on(LiveTranscriptionEvents.Transcript, on_message)
-        dg_connection.on(LiveTranscriptionEvents.Close, on_close)
-        dg_connection.on(LiveTranscriptionEvents.Error, on_error)
 
         # Configure transcription options
         options = LiveOptions(
             model="nova-3",
             language="en-US",
-            smart_format=True,
             encoding="linear16",
             channels=1,
             sample_rate=16000,
-            interim_results=True,
-            utterance_end_ms="1000",
-            vad_events=True,
-            endpointing=300,
+            punctuate=True,
+            smart_format=True,
         )
 
-        print("\n\nPress Enter to stop recording...\n\n")
-
-        # Start the connection
-        if dg_connection.start(options) is False:
-            print("Failed to connect to Deepgram")
-            return
+        # Start WebSocket connection
+        dg_connection.start(options)
 
         # Create and start microphone
         microphone = Microphone(dg_connection.send)
         microphone.start()
 
-        # Wait for user input to stop
-        input("")
+        print("Transcription started. Use 'dictator end' to stop.")
 
-        # Clean up
-        microphone.finish()
-        dg_connection.finish()
+        # Keep running until signal received
+        while True:
+            signal.pause()
 
-        print("Finished")
-
+    except KeyboardInterrupt:
+        cleanup_and_exit()
     except Exception as e:
-        print(f"Could not open socket: {e}")
+        print(f"Error: {e}")
+        cleanup_and_exit()
+
+
+def end():
+    lockfile = "/tmp/dictator.pid"
+
+    if not os.path.exists(lockfile):
+        print("No running dictator process found.")
         return
+
+    try:
+        # Read PID from lockfile
+        with open(lockfile, "r") as f:
+            pid = int(f.read().strip())
+
+        # Check if process is still running
+        try:
+            os.kill(pid, 0)  # Signal 0 checks if process exists
+        except ProcessLookupError:
+            print("Dictator process is not running (stale lockfile).")
+            os.remove(lockfile)
+            return
+
+        # Send SIGTERM to gracefully stop the process
+        os.kill(pid, signal.SIGTERM)
+        print("Sent stop signal to dictator process.")
+
+    except (ValueError, FileNotFoundError, PermissionError) as e:
+        print(f"Error stopping dictator: {e}")
+    except Exception as e:
+        print(f"Unexpected error: {e}")
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("command", type=str, choices=["begin", "end"])
+
+    args = parser.parse_args()
+
+    if args.command == "begin":
+        begin()
+    elif args.command == "end":
+        end()
 
 
 if __name__ == "__main__":
