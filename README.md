@@ -1,6 +1,6 @@
 # Dictator
 
-A professional voice recording and transcription CLI tool that records audio using PulseAudio, transcribes it using multiple backend services (Deepgram, AssemblyAI), and intelligently post-processes the text with LLM-based context-aware formatting before typing it using xdotool.
+A professional voice recording and transcription CLI tool that records audio using PyAudio (cross-platform), transcribes it using multiple backend services (Deepgram, AssemblyAI), and intelligently post-processes the text with LLM-based context-aware formatting before typing it using xdotool.
 
 ## Demo
 
@@ -172,16 +172,29 @@ The text will be automatically typed at your current cursor position.
 
 ### System Dependencies
 
-- **Linux** with PulseAudio and X11
+- **Cross-platform** (Linux, macOS, Windows)
 - **Python 3.12** or higher
-- **PulseAudio utilities** (`parec` command)
-- **xdotool** for text automation
+- **PyAudio** for audio recording (included in dependencies)
+- **xdotool** for text automation (Linux/X11 only)
 
-### Install System Dependencies (Ubuntu/Debian)
+### Install System Dependencies
 
+**Linux (Ubuntu/Debian):**
 ```bash
 sudo apt update
-sudo apt install pulseaudio-utils xdotool
+sudo apt install xdotool
+```
+
+**macOS:**
+```bash
+# PyAudio included in dependencies, no additional system deps needed
+# Note: Text typing functionality requires alternative to xdotool
+```
+
+**Windows:**
+```bash
+# PyAudio included in dependencies, no additional system deps needed
+# Note: Text typing functionality requires alternative to xdotool
 ```
 
 ### API Keys (Optional)
@@ -195,7 +208,7 @@ sudo apt install pulseaudio-utils xdotool
 ```
 dictator/
 ├── app.py                  # Main application orchestrator
-├── audio_recorder.py       # PulseAudio recording with memory buffering
+├── audio_recorder.py       # Cross-platform PyAudio recording with memory buffering
 ├── transcription/          # Transcription backend implementations
 │   ├── deepgram.py        # Deepgram API integration
 │   └── assemblyai.py      # AssemblyAI API integration

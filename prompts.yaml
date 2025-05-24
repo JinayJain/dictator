@@ -52,7 +52,6 @@ prompts:
 
       Guidelines:
       - Fix obvious transcription errors and remove filler words
-      - Add basic punctuation if completely missing
       - Keep the original phrasing, tone, and style
       - Do NOT rewrite or rephrase the content
       - Make only the most essential corrections

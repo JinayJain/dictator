@@ -1,12 +1,12 @@
 # Dictator
 
-Voice recording and transcription CLI tool that records audio using PulseAudio, transcribes it using Deepgram, and types the result using xdotool.
+Voice recording and transcription CLI tool that records audio using PyAudio (cross-platform), transcribes it using Deepgram, and types the result using xdotool.
 
 ## Project Overview
 
 This is a professional Python CLI application with a modular architecture:
 
-- Records audio using `parec` (PulseAudio)
+- Records audio using PyAudio (cross-platform)
 - Transcribes audio using Deepgram API
 - Types transcribed text using `xdotool`
 - Manages process lifecycle with PID lockfiles
@@ -21,7 +21,7 @@ dictator/
 ├── constants.py         # Configuration constants
 ├── exceptions.py        # Custom exception hierarchy
 ├── process_manager.py   # Process lifecycle & lockfile management
-├── audio_recorder.py    # PulseAudio recording
+├── audio_recorder.py    # Cross-platform PyAudio recording
 ├── transcription/       # Transcription backends
 │   ├── __init__.py      # Backend factory and exports
 │   ├── base.py          # Abstract base class
@@ -44,9 +44,9 @@ main.py                  # CLI entry point
 
 ### System Dependencies
 
-- `parec` (PulseAudio utilities) for audio recording
+- PyAudio for cross-platform audio recording
 - `xdotool` for text typing automation
-- Works on Linux systems with PulseAudio and X11
+- Works on Linux, macOS, and Windows (xdotool requires X11 on Linux)
 
 ### Code Style
 
@@ -69,7 +69,7 @@ main.py                  # CLI entry point
 
 - `DictatorApp`: Main orchestrator that coordinates all components
 - `ProcessManager`: Handles PID files and process lifecycle
-- `AudioRecorder`: Encapsulates PulseAudio recording logic
+- `AudioRecorder`: Encapsulates cross-platform PyAudio recording logic
 - `TranscriptionBackend`: Abstract base class for transcription services
 - `DeepgramBackend`: Deepgram API integration
 - `AssemblyAIBackend`: AssemblyAI API integration

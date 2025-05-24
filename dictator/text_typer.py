@@ -1,23 +1,25 @@
-"""Text typing functionality using xdotool."""
+"""Text typing functionality using PyAutoGUI."""
 
 import logging
-import subprocess
 
-from .constants import XDOTOOL_TIMEOUT
+import pyautogui
 
 logger = logging.getLogger(__name__)
 
 
 class TextTyper:
-    """Handles typing text using xdotool."""
+    """Handles typing text using PyAutoGUI."""
 
     def __init__(self):
         """Initialize TextTyper with buffering for trailing newlines."""
         self._buffered_newlines = 0
+        # Configure PyAutoGUI for cross-platform compatibility
+        pyautogui.FAILSAFE = True  # Move mouse to top-left corner to abort
+        pyautogui.PAUSE = 0  # No automatic pause between PyAutoGUI calls
 
     @staticmethod
     def type_text(text: str) -> None:
-        """Type text using xdotool."""
+        """Type text using PyAutoGUI."""
         if not text:
             logger.warning("No text to type")
             return
@@ -26,45 +28,21 @@ class TextTyper:
         logger.info(f"Starting to type text: {preview}")
 
         try:
-            # Check if text contains non-ASCII characters
-            try:
-                text.encode("ascii")
-                # ASCII text - use normal xdotool type
-                result = subprocess.run(
-                    ["xdotool", "type", "--delay", "3", "--", text],
-                    capture_output=True,
-                    text=True,
-                    timeout=XDOTOOL_TIMEOUT,
-                )
+            # PyAutoGUI handles Unicode natively, no need for special handling
+            pyautogui.typewrite(text, interval=0.003)  # 3ms delay between keystrokes
+            logger.info("Text typed successfully")
 
-                if result.returncode == 0:
-                    logger.info("Text typed successfully")
-                else:
-                    logger.error(
-                        f"xdotool failed with return code: {result.returncode}"
-                    )
-
-                if result.stderr:
-                    logger.error(f"xdotool error: {result.stderr}")
-
-            except UnicodeEncodeError:
-                # Contains Unicode - type each character using Unicode codes
-                TextTyper._type_unicode_string(text)
-                logger.info("Text typed successfully via Unicode codes")
-
-        except subprocess.TimeoutExpired:
-            logger.error("xdotool timed out")
-        except FileNotFoundError:
-            logger.error("xdotool not found. Please install xdotool.")
-        except OSError as e:
-            logger.error(f"Error running xdotool: {e}")
+        except pyautogui.FailSafeException:
+            logger.error("PyAutoGUI fail-safe triggered (mouse moved to corner)")
+        except Exception as e:
+            logger.error(f"Error typing text with PyAutoGUI: {e}")
 
     def type_text_chunk(self, text_chunk: str) -> None:
-        """Type a chunk of text immediately using xdotool.
+        """Type a chunk of text immediately using PyAutoGUI.
 
         This method types text chunks as they arrive for streaming scenarios.
         Uses minimal delay for real-time feel. Splits on newlines and types
-        each part separately, using Return key for actual newlines.
+        each part separately, using Enter key for actual newlines.
 
         Buffers trailing newlines and only outputs them when the next chunk arrives,
         preventing final trailing newlines from being typed.
@@ -114,98 +92,21 @@ class TextTyper:
             return
 
         try:
-            # Check if text contains non-ASCII characters
-            try:
-                text.encode("ascii")
-                # ASCII text - use normal xdotool type
-                result = subprocess.run(
-                    ["xdotool", "type", "--delay", "1", "--", text],
-                    capture_output=True,
-                    text=True,
-                    timeout=XDOTOOL_TIMEOUT,
-                )
+            # PyAutoGUI handles all text types natively
+            pyautogui.typewrite(text, interval=0.001)  # 1ms delay for streaming
 
-                if result.returncode != 0:
-                    logger.error(
-                        f"xdotool failed with return code: {result.returncode}"
-                    )
-
-                if result.stderr:
-                    logger.error(f"xdotool error: {result.stderr}")
-
-            except UnicodeEncodeError:
-                # Contains Unicode - type each character using Unicode codes
-                TextTyper._type_unicode_string(text)
-
-        except subprocess.TimeoutExpired:
-            logger.error("xdotool timed out while typing text part")
-        except FileNotFoundError:
-            logger.error("xdotool not found. Please install xdotool.")
-        except OSError as e:
-            logger.error(f"Error running xdotool for text part: {e}")
+        except pyautogui.FailSafeException:
+            logger.error("PyAutoGUI fail-safe triggered while typing text part")
+        except Exception as e:
+            logger.error(f"Error typing text part with PyAutoGUI: {e}")
 
     @staticmethod
     def _type_newline() -> None:
-        """Type a newline using Return key."""
+        """Type a newline using Enter key."""
         try:
-            result = subprocess.run(
-                ["xdotool", "key", "Return"],
-                capture_output=True,
-                text=True,
-                timeout=XDOTOOL_TIMEOUT,
-            )
+            pyautogui.press("enter")
 
-            if result.returncode != 0:
-                logger.error(f"xdotool failed to type newline: {result.returncode}")
-
-            if result.stderr:
-                logger.error(f"xdotool newline error: {result.stderr}")
-
-        except subprocess.TimeoutExpired:
-            logger.error("xdotool timed out while typing newline")
-        except FileNotFoundError:
-            logger.error("xdotool not found. Please install xdotool.")
-        except OSError as e:
-            logger.error(f"Error running xdotool for newline: {e}")
-
-    @staticmethod
-    def _type_unicode_string(text: str) -> None:
-        """Type text containing Unicode characters using xdotool key codes.
-
-        Args:
-            text: Text containing Unicode characters to type
-        """
-        try:
-            for char in text:
-                if ord(char) > 127:  # Non-ASCII character
-                    # Use Unicode code point with xdotool key
-                    unicode_code = f"U{ord(char):04x}"
-                    result = subprocess.run(
-                        ["xdotool", "key", unicode_code],
-                        capture_output=True,
-                        text=True,
-                        timeout=XDOTOOL_TIMEOUT,
-                    )
-
-                    if result.returncode != 0:
-                        logger.error(
-                            f"xdotool failed to type Unicode character {char} (U+{ord(char):04X})"
-                        )
-                else:
-                    # ASCII character - use regular type
-                    result = subprocess.run(
-                        ["xdotool", "type", "--delay", "1", "--", char],
-                        capture_output=True,
-                        text=True,
-                        timeout=XDOTOOL_TIMEOUT,
-                    )
-
-                    if result.returncode != 0:
-                        logger.error(f"xdotool failed to type ASCII character {char}")
-
-        except subprocess.TimeoutExpired:
-            logger.error("Unicode typing operation timed out")
-        except FileNotFoundError:
-            logger.error("xdotool not found. Please install xdotool.")
-        except OSError as e:
-            logger.error(f"Error in Unicode typing operation: {e}")
+        except pyautogui.FailSafeException:
+            logger.error("PyAutoGUI fail-safe triggered while typing newline")
+        except Exception as e:
+            logger.error(f"Error typing newline with PyAutoGUI: {e}")
