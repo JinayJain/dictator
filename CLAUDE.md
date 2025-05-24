@@ -115,15 +115,13 @@ All constants in `dictator/constants.py`:
 
 5. **Constants**: Put configuration values in `constants.py`, not hardcoded in methods
 
-6. **Testing Strategy**: Each module can be unit tested independently due to clean separation
+6. **Signal Handling**: The app uses signal handlers for graceful shutdown - be careful when modifying signal-related code
 
-7. **Signal Handling**: The app uses signal handlers for graceful shutdown - be careful when modifying signal-related code
+7. **Process Management**: The lockfile system prevents multiple instances - don't bypass these checks
 
-8. **Process Management**: The lockfile system prevents multiple instances - don't bypass these checks
+8. **Audio Format**: Currently uses 16kHz WAV format optimized for Deepgram - changes may affect transcription quality
 
-9. **Audio Format**: Currently uses 16kHz WAV format optimized for Deepgram - changes may affect transcription quality
-
-10. **Transcription Backends**: Supports both Deepgram (nova-3 model) and AssemblyAI backends - configure via `--backend` CLI argument
+9. **Transcription Backends**: Supports both Deepgram (nova-3 model) and AssemblyAI backends - configure via `--backend` CLI argument
 
 ## Claude Memory
 

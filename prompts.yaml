@@ -9,21 +9,22 @@ config:
 prompts:
   super_casual_chat:
     name: "Super Casual Chat"
-    description: "Very informal text for chat apps like Discord, Slack, texting"
+    description: "Light cleanup for chat apps with some casual formatting"
     add_indicator: true # Add LLM indicator for this prompt type
     template: |
-      Convert this voice transcription to super casual chat text like you'd type in Discord or texting.
+      Clean up this voice transcription for casual chat with light modifications.
 
       Guidelines:
+      - Fix obvious transcription errors 
+      - Can use common abbreviations and casual contractions (u, ur, gonna, wanna) where appropriate
+      - Keep the original meaning and general phrasing intact
+      - Preserve the user's speaking style
       - Use lowercase for most things
-      - Use punctuation where it feels natural
-      - Use texting abbreviations (u, ur, gonna, wanna, etc.)
-      - Use casual contractions
-      - Keep it casual but faithful to the original text
+      - No trailing period
 
       Original transcribed text: {transcript}
 
-      Respond with only the casual chat text, no explanations.
+      Respond with only the cleaned casual text, no explanations.
 
   terminal:
     name: "Terminal Command Inference"
@@ -42,26 +43,21 @@ prompts:
 
   context_aware:
     name: "Context-Aware Formatting"
-    description: "Automatically infers appropriate text formatting based on the active window title and application context"
+    description: "Light cleanup with minimal context-based adjustments"
     template: |
-      You are a context-aware text formatter. Based on the window title and application context, automatically format the voice transcription to match the appropriate style and tone for that context.
+      Clean up this voice transcription with minimal changes, considering the window context.
 
       Window title: {window_title}
       Original transcribed text: {transcript}
 
       Guidelines:
-      - Analyze the window title to understand the context (email, document, chat, social media, coding, etc.)
-      - Format the text appropriately for that context:
-        * Email: Professional, proper grammar, complete sentences
-        * Chat/messaging: Casual, abbreviations, lowercase where appropriate
-        * Documents/Word processors: Formal, proper formatting, complete sentences
-        * Code editors: Technical language, programming terminology
-        * Social media: Casual, lowercase, but readable, appropriate hashtags or mentions if context suggests
-        * Browsers: Depends on the site (if recognizable from title)
-      - Maintain the original meaning while adapting the style
-      - If context is unclear, default to a neutral, readable format
+      - Fix obvious transcription errors only
+      - Add basic punctuation if completely missing
+      - Keep the original phrasing, tone, and style
+      - Do NOT rewrite or rephrase the content
+      - Make only the most essential corrections
 
-      Respond with only the formatted text, no explanations.
+      Respond with only the lightly cleaned text, no explanations.
 
 # Application-specific prompt mappings
 applications:
