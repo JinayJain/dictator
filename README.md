@@ -6,6 +6,8 @@ A professional voice recording and transcription CLI tool that records audio usi
 
 https://github.com/user-attachments/assets/16fb20ff-84d7-4cb8-92b0-2cca199d8687
 
+https://github.com/user-attachments/assets/8d9ebae4-d7c1-446c-be1e-a7b753d348e4
+
 
 
 ## Setup
