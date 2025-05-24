@@ -8,7 +8,6 @@ AUDIO_FILE_PATH = Path("/tmp/dictator_recording.wav")
 
 # Audio settings
 SAMPLE_RATE = 16000
-AUDIO_FORMAT = "s16ne"
 CHANNELS = 1
 
 # Timeouts
