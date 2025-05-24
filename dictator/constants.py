@@ -12,6 +12,7 @@ CHANNELS = 1
 
 # Timeouts
 PROCESS_TERMINATE_TIMEOUT = 5
+XDOTOOL_TIMEOUT = 2
 
 # LLM Post-processing
 DEFAULT_LLM_MODEL = "gemini/gemini-2.0-flash"

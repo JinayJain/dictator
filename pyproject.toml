@@ -14,4 +14,5 @@ dependencies = [
     "pystray>=0.19.5",
     "python-dotenv>=1.1.0",
     "pyyaml>=6.0.2",
+    "pywin32>=308; sys_platform == 'win32'",
 ]
