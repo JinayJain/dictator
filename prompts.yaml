@@ -15,7 +15,7 @@ prompts:
       Clean up this voice transcription for casual chat with light modifications.
 
       Guidelines:
-      - Fix obvious transcription errors 
+      - Fix obvious transcription errors and remove filler words
       - Can use common abbreviations and casual contractions (u, ur, gonna, wanna) where appropriate
       - Keep the original meaning and general phrasing intact
       - Preserve the user's speaking style
@@ -51,7 +51,7 @@ prompts:
       Original transcribed text: {transcript}
 
       Guidelines:
-      - Fix obvious transcription errors only
+      - Fix obvious transcription errors and remove filler words
       - Add basic punctuation if completely missing
       - Keep the original phrasing, tone, and style
       - Do NOT rewrite or rephrase the content
