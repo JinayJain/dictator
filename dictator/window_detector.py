@@ -4,6 +4,7 @@ import logging
 import subprocess
 from typing import Optional
 
+from .constants import XDOTOOL_TIMEOUT
 from .exceptions import WindowDetectionError
 
 logger = logging.getLogger(__name__)
@@ -61,7 +62,7 @@ class WindowDetector:
             capture_output=True,
             text=True,
             check=True,
-            timeout=5,
+            timeout=XDOTOOL_TIMEOUT,
         )
         return result.stdout.strip()
 
@@ -75,7 +76,7 @@ class WindowDetector:
                 capture_output=True,
                 text=True,
                 check=True,
-                timeout=5,
+                timeout=XDOTOOL_TIMEOUT,
             )
 
             if property_name == "WM_NAME":

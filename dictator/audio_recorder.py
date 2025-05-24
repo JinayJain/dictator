@@ -36,8 +36,8 @@ class AudioRecorder:
             "parec",
             "--record",
             f"--rate={SAMPLE_RATE}",
-            "--channels=1",
-            "--format=s16ne",  # 16-bit signed native endian (matches nerd-dictation)
+            f"--channels={CHANNELS}",
+            f"--format={AUDIO_FORMAT}",
             "--latency=10",  # Low latency like nerd-dictation
         ]
 

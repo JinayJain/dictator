@@ -7,6 +7,7 @@ from typing import Optional
 
 import litellm
 
+from .constants import DEFAULT_LLM_MODEL, LLM_PROCESSING_TIMEOUT
 from .exceptions import LLMProcessingError
 from .prompt_manager import PromptManager
 from .text_typer import TextTyper
@@ -18,7 +19,7 @@ logger = logging.getLogger(__name__)
 class LLMPostProcessor:
     """Post-processes transcribed text using LLM based on application context."""
 
-    def __init__(self, model: str = "gemini/gemini-2.0-flash"):
+    def __init__(self, model: str = DEFAULT_LLM_MODEL):
         """Initialize the LLM post-processor.
 
         Args:
@@ -145,7 +146,7 @@ class LLMPostProcessor:
                 messages=[{"role": "user", "content": formatted_prompt}],
                 temperature=0.3,  # Low temperature for consistent output
                 max_tokens=1000,  # Reasonable limit for transcript processing
-                timeout=30,  # 30 second timeout
+                timeout=LLM_PROCESSING_TIMEOUT,
             )
 
             if response and response.choices and len(response.choices) > 0:
@@ -193,7 +194,7 @@ class LLMPostProcessor:
                 messages=[{"role": "user", "content": formatted_prompt}],
                 temperature=0.3,  # Low temperature for consistent output
                 max_tokens=1000,  # Reasonable limit for transcript processing
-                timeout=30,  # 30 second timeout
+                timeout=LLM_PROCESSING_TIMEOUT,
                 stream=True,  # Enable streaming
             )
 
