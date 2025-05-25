@@ -10,9 +10,9 @@ dependencies = [
     "litellm>=1.70.4",
     "pillow>=11.2.1",
     "pyaudio>=0.2.14",
-    "pyautogui>=0.9.54",
     "pystray>=0.19.5",
     "python-dotenv>=1.1.0",
     "pyyaml>=6.0.2",
     "pywin32>=308; sys_platform == 'win32'",
+    "pynput>=1.8.1",
 ]
