@@ -1,14 +1,16 @@
 # Dictator
 
-Voice recording and transcription CLI tool that records audio using PyAudio (cross-platform), transcribes it using Deepgram, and types the result using xdotool.
+Voice recording and transcription CLI tool that records audio using PyAudio (cross-platform), transcribes it using multiple backend services (Deepgram, AssemblyAI), applies context-aware LLM post-processing, and types the result using cross-platform text typing.
 
 ## Project Overview
 
 This is a professional Python CLI application with a modular architecture:
 
-- Records audio using PyAudio (cross-platform)
-- Transcribes audio using Deepgram API
-- Types transcribed text using `xdotool`
+- Records audio using PyAudio (cross-platform) with memory buffering
+- Transcribes audio using multiple backends (Deepgram, AssemblyAI)
+- Applies context-aware LLM post-processing based on focused application
+- Types text using cross-platform input simulation (pynput)
+- Provides visual feedback through system tray integration
 - Manages process lifecycle with PID lockfiles
 
 ## Architecture
@@ -21,16 +23,21 @@ dictator/
 ├── constants.py         # Configuration constants
 ├── exceptions.py        # Custom exception hierarchy
 ├── process_manager.py   # Process lifecycle & lockfile management
-├── audio_recorder.py    # Cross-platform PyAudio recording
+├── audio_recorder.py    # Cross-platform PyAudio recording with memory buffering
 ├── transcription/       # Transcription backends
 │   ├── __init__.py      # Backend factory and exports
 │   ├── base.py          # Abstract base class
 │   ├── deepgram.py      # Deepgram API integration
 │   └── assemblyai.py    # AssemblyAI API integration
-├── text_typer.py       # xdotool text typing
-└── app.py              # Main application orchestrator
+├── llm_processor.py     # LLM-based post-processing with streaming
+├── prompt_manager.py    # Configurable prompt system for LLM processing
+├── window_detector.py   # Cross-platform window detection for context awareness
+├── text_typer.py        # Cross-platform text typing using pynput
+├── system_tray.py       # System tray status integration
+└── app.py               # Main application orchestrator
 
 main.py                  # CLI entry point
+prompts.yaml             # LLM prompt configuration
 ```
 
 ## Development Guidelines
@@ -41,12 +48,15 @@ main.py                  # CLI entry point
 - Environment variables loaded via `python-dotenv`
 - Requires `DEEPGRAM_API_KEY` environment variable for Deepgram backend
 - Requires `ASSEMBLYAI_API_KEY` environment variable for AssemblyAI backend
+- Requires `GEMINI_API_KEY` environment variable for LLM post-processing (optional)
 
 ### System Dependencies
 
 - PyAudio for cross-platform audio recording
-- `xdotool` for text typing automation
-- Works on Linux, macOS, and Windows (xdotool requires X11 on Linux)
+- pynput for cross-platform text typing automation
+- System tray support via pystray
+- Window detection tools (xdotool/xprop on Linux, AppleScript on macOS, Win32 API on Windows)
+- Works on Linux, macOS, and Windows
 
 ### Code Style
 
@@ -67,13 +77,17 @@ main.py                  # CLI entry point
 
 ### Key Classes
 
-- `DictatorApp`: Main orchestrator that coordinates all components
+- `DictatorApp`: Main orchestrator that coordinates all components with lazy initialization
 - `ProcessManager`: Handles PID files and process lifecycle
-- `AudioRecorder`: Encapsulates cross-platform PyAudio recording logic
+- `AudioRecorder`: Encapsulates cross-platform PyAudio recording with memory buffering
 - `TranscriptionBackend`: Abstract base class for transcription services
 - `DeepgramBackend`: Deepgram API integration
 - `AssemblyAIBackend`: AssemblyAI API integration
-- `TextTyper`: xdotool automation
+- `LLMPostProcessor`: LLM-based post-processing with streaming support
+- `PromptManager`: Configurable prompt system for different applications
+- `WindowDetector`: Cross-platform window detection for context awareness
+- `SystemTrayManager`: Visual status feedback via system tray
+- `TextTyper`: Cross-platform text typing using pynput
 
 ### Commands
 
@@ -87,14 +101,19 @@ All constants in `dictator/constants.py`:
 
 - File paths for lockfile and audio file
 - Audio settings (16kHz, mono, 16-bit)
-- Timeout values for process termination
+- Timeout values for process termination and LLM processing
+- Default LLM model configuration
+- Window detection timeout settings
 - Transcription backend selection via `--backend` CLI argument (defaults to "deepgram", can be "assemblyai")
 
 ### Error Handling
 
 - `DictatorError`: Base exception class
 - `RecordingError`: Issues with audio recording
-- `TranscriptionError`: Issues with Deepgram API
+- `TranscriptionError`: Issues with transcription APIs
+- `LLMProcessingError`: Issues with LLM post-processing
+- `WindowDetectionError`: Issues with window detection
+- `PromptConfigError`: Issues with prompt configuration
 - All exceptions logged with full context
 
 ### Logging
@@ -122,6 +141,14 @@ All constants in `dictator/constants.py`:
 8. **Audio Format**: Currently uses 16kHz WAV format optimized for Deepgram - changes may affect transcription quality
 
 9. **Transcription Backends**: Supports both Deepgram (nova-3 model) and AssemblyAI backends - configure via `--backend` CLI argument
+
+10. **LLM Post-Processing**: Context-aware text formatting based on focused application using Gemini Pro
+
+11. **System Tray Integration**: Visual feedback during recording, transcription, and processing phases
+
+12. **Cross-Platform Window Detection**: Automatic application context detection for appropriate text formatting
+
+13. **Streaming Processing**: Real-time text typing as LLM generates output for better user experience
 
 ## Claude Memory
 
